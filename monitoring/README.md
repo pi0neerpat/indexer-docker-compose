@@ -170,13 +170,13 @@ Navigate to `grafana.mysite.com/dashboards`, and use the grey "Import" button to
 
 Create a new dashboard using each of the following JSON files:
 
-- [indexing.json](https://gist.github.com/pi0neerpat/b4e2efd11531d3b872455fcaaeb06dd8)
-- [metrics.json](https://gist.github.com/pi0neerpat/5c469d7ffe850b34c7b245be48f51706)
-- [postgres.json](https://gist.github.com/pi0neerpat/9e9e2356b2e7db37e05173e03fa9a662)
+- [indexing.json](./dashboards/indexing.json)
+- [metrics.json](./dashboards/metrics.json)
+- [postgres.json](./dashboards/postgres.json)
 
 # Final testing
 
-Let's check that our Prometheus endpoint is properly exposed. Update with your domain and and paste into your browser:
+Let's check that our Prometheus endpoint is properly exposed. Update with your domain and paste into your browser:
 
 prometheus.mysite.com/federate?match[]=subgraph_query_execution_time_count&match[]=subgraph_count&match[]=QmXKwSEMirgWVn41nRzkT3hpUBw29cp619Gx58XW6mPhZP_sync_total_secs&match[]=Qme2hDXrkBpuXAYEuwGPAjr6zwiMZV4FHLLBa3BHzatBWx_sync_total_secs&match[]=QmTXzATwNfgGVukV1fX2T6xw9f6LAYRVWpsdXyRWzUR2H9_sync_total_secs
 
