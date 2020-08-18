@@ -136,7 +136,7 @@ You should now be able to access your Grafana at `grafana.mysite.com`
 
 ## Add Data Sources
 
-We will use the Docker bridge IP again for this step, so that Grafana can access Prometheus.
+We will use the Docker bridge IP again for this step, so that Grafana can access the Prometheus and Postgres containers.
 
 Navigate to `grafana.mysite.com/datasources`, and use the green button "Add data source" to add a new source.
 
@@ -158,11 +158,11 @@ CREATE USER grafana WITH PASSWORD 'grafana';
 
 2. Add the user in the postgres data source
 
-Should be named (lowercase) "postgres". URL will look like `172.17.0.1:5432`
+Should be named (lowercase) "postgres". URL will be your Docker bridge IP on port `5432`, eg. `172.17.0.1:5432`
 
 ### Prometheus
 
-Should be named (lowercase) "prometheus". URL will look like `172.17.0.1:9090`
+Should be named (lowercase) "prometheus". URL will be your Docker bridge IP on port `9090`, eg. `172.17.0.1:9090`
 
 ## Add Dashboards
 
