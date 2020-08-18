@@ -34,6 +34,8 @@ You need the following installed on your server:
 - nginx
 - httpie
 
+If you are unfamiliar with using Nginx, I've added a basic introduction in the [Nginx folder](../../nginx).
+
 ### Clone this repo
 
 Clone this repo to `~/indexer-docker-compose` with:
@@ -48,7 +50,7 @@ You will also need a Web3 Provider. For this tutorial you can use the free Infur
 
 # Route requests with Nginx
 
-Let's expose port `8000` on our domain using Nginx. If you are unfamiliar with using Nginx, I've added a basic outline in the [Nginx folder](../../nginx).
+Let's expose port `8000` on our domain using Nginx.
 
 ```bash
 sudo nano /etc/nginx/sites-enabled/indexer.conf
