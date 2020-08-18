@@ -3,6 +3,7 @@
 # Table of Contents
 
 <!-- TOC START min:1 max:2 link:true asterisk:false update:true -->
+
 - [Table of Contents](#table-of-contents)
 - [Outline](#outline)
 - [Run separate Indexer and Query nodes](#run-separate-indexer-and-query-nodes)
@@ -72,10 +73,13 @@ Things to pay attention to:
 
 ## Update Nginx config
 
-In order to support websockets and health monitoring, we must change our Nginx config. Replace the `indexer.conf` you created in the BASIC guide to the final one in the `/nginx` folder of this repo.
+In order to support websockets and health monitoring, we must change our Nginx config. Replace the `indexer.conf` you created in the BASIC guide to the final one in the `/nginx` folder of this repo. You will need to update the `server_name`.
 
 ```bash
 sudo cp ~/indexer-docker-compose/nginx/indexer.conf /etc/nginx/sites-enabled
+
+nano /etc/nginx/sites-enabled/indexer.conf
+# Update server_name
 ```
 
 Next update `/etc/nginx/nginx.conf` to add support for [Nginx connection upgrades](http://nginx.org/en/docs/http/websocket.html) as follows:
@@ -103,8 +107,20 @@ sudo systemctl reload nginx
 
 We also need to generate SSL certs to acces `https://indexer.mysite.com/index-node/` from the browser
 
+Now we need Certbot to issue a certificate.
+
 ```bash
-sudo certbot
+# Install
+sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:certbot/certbot
+sudo apt-get update
+sudo apt-get install python-certbot-nginx
+
+# Run
+sudo certbot --nginx certonly
+
+# If successful, restart Nginx
+sudo systemctl reload nginx
 ```
 
 Things to pay attention to:
