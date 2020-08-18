@@ -1,0 +1,62 @@
+version: "3"
+services:
+  # Query
+  # adapted from https://github.com/graphprotocol/mission-control-indexer/blob/8cc08c4c72ed7a7fcab2bfeace172626c9d08ee3/k8s/base/query-node/deployment.yaml
+  graph-node-query:
+    image: graphprotocol/graph-node:latest
+    ports:
+      - "8000:8000" # http
+      - "8001:8001" # ws
+      - "8030:8030" # index-node
+    depends_on:
+      - postgres
+    environment:
+      postgres_host: postgres:5432
+      postgres_user: graph-node
+      postgres_pass: let-me-in
+      postgres_db: graph-node
+      ipfs: "https://testnet.thegraph.com/ipfs/"
+      ethereum: "mainnet:https://mainnet.infura.io/v3/<your-key>"
+      node_role: "query-node"
+      node_id: "query-node"
+      GRAPH_KILL_IF_UNRESPONSIVE: "true"
+      EXPERIMENTAL_SUBGRAPH_VERSION_SWITCHING_MODE: "synced" # ?
+      RUST_LOG: info
+    restart: always
+
+  # Index
+  # adapted from https://github.com/graphprotocol/mission-control-indexer/blob/8cc08c4c72ed7a7fcab2bfeace172626c9d08ee3/k8s/base/index-node/stateful_set.yaml
+  graph-node-indexer:
+    image: graphprotocol/graph-node:latest
+    ports:
+      - "8100:8000" # http
+      - "8120:8020" # json-rpc
+      - "8140:8040" # metrics
+    depends_on:
+      - postgres
+    environment:
+      postgres_host: postgres:5432
+      postgres_user: graph-node
+      postgres_pass: let-me-in
+      postgres_db: graph-node
+      ipfs: "https://testnet.thegraph.com/ipfs/"
+      ethereum: "mainnet:https://mainnet.infura.io/v3/<your-key>"
+      node_role: "index-node"
+      node_id: "index-node"
+      BLOCK_INGESTOR: "index-node" # Only need to specify one block ingestor
+      GRAPH_KILL_IF_UNRESPONSIVE: "true"
+      RUST_LOG: info
+    restart: always
+
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    command: ["postgres", "-cshared_preload_libraries=pg_stat_statements"]
+    environment:
+      POSTGRES_USER: graph-node
+      POSTGRES_PASSWORD: let-me-in
+      POSTGRES_DB: graph-node
+    volumes:
+      - ~/subgraph-data/postgres:/var/lib/postgresql/data
+    restart: always

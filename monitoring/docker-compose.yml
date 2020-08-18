@@ -1,0 +1,41 @@
+version: "3.2"
+services:
+  grafana:
+    image: grafana/grafana:6.4.4
+    ports:
+      - "3000:3000"
+    volumes:
+      - type: bind
+        source: /docker/volumes/grafana/data/
+        target: /var/lib/grafana
+      - type: bind
+        source: /docker/volumes/grafana/log/
+        target: /var/log/grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_SERVER_DOMAIN: "grafana.dappy.dev"
+      GF_SERVER_ROOT_URL: "https://grafana.dappy.dev"
+    network_mode: bridge
+    restart: unless-stopped
+    # mem_limit: 4G
+    # mem_reservation: 16M
+  prometheus:
+    image: prom/prometheus:v2.20.1
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=120d"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    volumes:
+      - type: "bind"
+        source: $HOME/monitoring-data/prometheus
+        target: /prometheus
+      - type: "bind"
+        source: $HOME/indexer-docker-compose/monitoring/prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    network_mode: bridge
+    restart: unless-stopped
