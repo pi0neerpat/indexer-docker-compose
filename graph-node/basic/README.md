@@ -3,6 +3,7 @@
 # Table of Contents
 
 <!-- TOC START min:1 max:2 link:true asterisk:false update:true -->
+
 - [Table of Contents](#table-of-contents)
 - [Overview](#overview)
   - [Prerequisites](#prerequisites)
@@ -24,25 +25,26 @@
 
 ## Prerequisites
 
-You will need to the following on your server.
+### Software
 
-### Required
+You need the following installed on your server:
 
 - docker
 - docker-compose
 - nginx
 - httpie
 
-Clone this repo with:
+### Clone this repo
+
+Clone this repo to `~/indexer-docker-compose` with:
 
 ```bash
 git clone https://github.com/pi0neerpat/indexer-docker-compose.git ~/indexer-docker-compose
 ```
 
-### Optional
+### Web3 Provider
 
-- npm, yarn
-- @graphprotocol/graph-cli
+You will also need a Web3 Provider. For this tutorial you can use the free Infura tier, however it will not work for any subgraphs except `jannis/gravity`. See the wiki [Setup: Ethereum Nodes and Providers](https://github.com/graphprotocol/mission-control-indexer/wiki/Setup:-Ethereum-Nodes-and-Providers) for more info.
 
 # Route requests with Nginx
 
@@ -89,7 +91,7 @@ sudo systemctl reload nginx
 
 ## Start docker-compose
 
-Navigate to this folder and update `docker-compose.yaml` with your Infura key:
+Navigate to this folder and update `docker-compose.yml` with your Infura key:
 
 ```yaml
 version: "3"
@@ -99,7 +101,11 @@ services:
       # ...
       # UPDATE HERE
       ethereum: "mainnet:https://mainnet.infura.io/v3/<your-key>"
-
+  postgres:
+    #...
+    environment:
+      POSTGRES_USER: graph-node
+      POSTGRES_PASSWORD: let-me-in # CHANGE ME
 ```
 
 Create a folder to hold your Postgres data

@@ -16,6 +16,7 @@ services:
       postgres_pass: let-me-in
       postgres_db: graph-node
       ipfs: "https://testnet.thegraph.com/ipfs/"
+      # CHANGE ME
       ethereum: "mainnet:https://mainnet.infura.io/v3/<your-key>"
       RUST_LOG: info
       node_role: "combined-node"
@@ -27,6 +28,7 @@ services:
     command: ["postgres", "-cshared_preload_libraries=pg_stat_statements"]
     environment:
       POSTGRES_USER: graph-node
+      # CHANGE ME
       POSTGRES_PASSWORD: let-me-in
       POSTGRES_DB: graph-node
     volumes:

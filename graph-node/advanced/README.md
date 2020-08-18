@@ -3,14 +3,13 @@
 # Table of Contents
 
 <!-- TOC START min:1 max:2 link:true asterisk:false update:true -->
-
 - [Table of Contents](#table-of-contents)
 - [Outline](#outline)
 - [Run separate Indexer and Query nodes](#run-separate-indexer-and-query-nodes)
 - [Add Websockets & Health Monitoring](#add-websockets--health-monitoring)
   - [Update Nginx config](#update-nginx-config)
   - [Check Indexer health](#check-indexer-health)
-- [Run Postgres as its own service](#run-postgres-as-its-own-service)
+- [Harden the Postgres Database](#harden-the-postgres-database)
 - [Bonus: Deploy your own subgraph](#bonus-deploy-your-own-subgraph)
 - [Extras](#extras)
 - [Next Steps](#next-steps)
@@ -28,15 +27,21 @@ So far we have been running a `graph-node` in "combined-node" mode. This means i
 
 We need to separate these functions since the demand for each may scale up/down depending on how many subgraphs are syncing, and how many requests we are serving,
 
-Stop your existing graph-nodes, and start the new `docker-compose` in this folder.
+Stop your existing graph-nodes
 
 ```bash
 cd ~/indexer-docker-compose/graph-node/basic && docker-compose down
-
-cd ~/indexer-docker-compose/graph-node/advanced && docker-compose up -d
 ```
 
-Take a look at the new `docker-compose.yml`. We will be creating two separate instances of graph-nodes. One in "query-node" mode, and the other in "index-node" mode.
+Navigate to this folder, update `docker-compose.yml` with your Postgres login and Web3 Provider info, and then start the new docker compose.
+
+```bash
+cd ~/indexer-docker-compose/graph-node/advanced
+nano docker-compose.yml
+docker-compose up -d
+```
+
+In the new `docker-compose.yml` we create two separate instances of graph-nodes. One in "query-node" mode, and the other in "index-node" mode.
 
 ```yaml
 services:
@@ -61,7 +66,7 @@ Things to pay attention to:
 
 - Deploying subgraphs is now handled by the "index-node", while queries are handled by the "query-node".
 - We are binding the "index-node" to a different set of ports eg. `81XX`. Your create/deploy commands will need to reflect this port change.
-- In the BASIC guide we set Postgres to store data in `~/subgraph-data/postgres`. Since we do the same here, we won't lose any existing subgraph sync data.
+- In the BASIC guide we set Postgres to store data in `~/subgraph-data/postgres`. Since we do the same here, we won't lose any existing subgraph sync data (unless you changed your authentication)
 
 # Add Websockets & Health Monitoring
 
@@ -89,12 +94,23 @@ http {
 }
 ```
 
-Excellent! Now we have support for websockets, and we can perform health checks against the query node.
+Excellent! Now we have support for websockets, and we can perform health checks against the query node. Let's put the changes into effect:
+
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+We also need to generate SSL certs to acces `https://indexer.mysite.com/index-node/` from the browser
+
+```bash
+sudo certbot
+```
 
 Things to pay attention to:
 
-- Health checks are performed against
-- This config only works for the query node on ports `80XX`. You will need to edit it if you want to access your index-node externally.
+- Health checks are performed against `index-node/`
+- This config only exposes the "query-node" on ports `80XX`. If you want external access to your "index-node", you will need to add that.
 
 ## Check Indexer health
 
@@ -155,22 +171,26 @@ You should get a response like this:
 }
 ```
 
-Learn more about health checks [here](https://thegraph.com/docs/deploy-a-subgraph#checking-subgraph-health)
+> :100: PRO-TIP: Learn more about health checks [here](https://thegraph.com/docs/deploy-a-subgraph#checking-subgraph-health)
 
-# Run Postgres as its own service
+# Harden the Postgres Database
 
-The Graph team recommends not running postgres using docker-compose, since it needs to be very stable.
+The Graph team does not recommend running postgres using `docker-compose`, since it needs to be very stable. I have not needed to do this yet, however I will list your options just in case:
 
-TODO: docs for running Postgres as systemd service
+- Run Postgres as systemd service on your server
+- Use a 3rd-party provider
 
 # Bonus: Deploy your own subgraph
 
 In this example we will use the subgraph `jannis/gravity` to demonstrate how you would deploy your own subgraph to your indexer.
 
+First install `graph-cli`, download the desired subgraph repo, and make any changes to the `subgraph.yaml`
+
 ```bash
 # Install the graph-cli
 npm i -g @graphprotocol/graph-cli
 
+# Use any existing subgraph
 git clone https://github.com/Jannis/gravity-subgraph.git && cd gravity-subgraph
 ```
 
