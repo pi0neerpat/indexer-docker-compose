@@ -4,7 +4,6 @@
 
 <!-- TOC START min:1 max:2 link:true asterisk:false update:true -->
 - [Table of Contents](#table-of-contents)
-- [Outline](#outline)
 - [Set up Grafana and Prometheus](#set-up-grafana-and-prometheus)
   - [Configure Prometheus.yml](#configure-prometheusyml)
   - [Update docker-compose.yml](#update-docker-composeyml)
@@ -17,8 +16,6 @@
 - [Next Steps](#next-steps)
 <!-- TOC END -->
 
-
-# Outline
 
 # Set up Grafana and Prometheus
 
