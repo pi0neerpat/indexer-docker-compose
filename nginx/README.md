@@ -52,3 +52,5 @@ sudo nginx -t
 # Restart the service the the new configs
 sudo systemctl reload nginx
 ```
+
+That's pretty much it. You can do it!
