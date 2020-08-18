@@ -8,6 +8,7 @@ services:
       - "8000:8000" # http
       - "8001:8001" # ws
       - "8030:8030" # index-node
+      - "8040:8040" # metrics
     depends_on:
       - postgres
     environment:

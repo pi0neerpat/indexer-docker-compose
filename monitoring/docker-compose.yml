@@ -14,8 +14,8 @@ services:
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
       GF_ANALYTICS_REPORTING_ENABLED: "false"
-      GF_SERVER_DOMAIN: "grafana.dappy.dev"
-      GF_SERVER_ROOT_URL: "https://grafana.dappy.dev"
+      GF_SERVER_DOMAIN: "grafana.mysite.com"
+      GF_SERVER_ROOT_URL: "https://grafana.mysite.com"
     network_mode: bridge
     restart: unless-stopped
     # mem_limit: 4G

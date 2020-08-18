@@ -3,10 +3,12 @@
 # Table of Contents
 
 <!-- TOC START min:1 max:2 link:true asterisk:false update:true -->
+
 - [Table of Contents](#table-of-contents)
 - [Outline](#outline)
 - [Run separate Indexer and Query nodes](#run-separate-indexer-and-query-nodes)
-- [Add Websocket support, and enable health monitoring](#add-websocket-support-and-enable-health-monitoring)
+- [Add Websockets & Health Monitoring](#add-websockets--health-monitoring)
+  - [Update Nginx config](#update-nginx-config)
   - [Check Indexer health](#check-indexer-health)
 - [Run Postgres as its own service](#run-postgres-as-its-own-service)
 - [Bonus: Deploy your own subgraph](#bonus-deploy-your-own-subgraph)
@@ -18,191 +20,68 @@
 
 :exclamation: This guide assumes you've completed [Graph Node docker-compose - BASIC](../basic).
 
-Now we need to improve our setup to meet "production" demands. In this section we will cover the following:
-
-- Add Websocket support
-- Add Indexer health monitoring
-- Use separate nodes for indexing and querying
-- Harden the Postgres database
-- bonus: Deploy your _own subgraph_ to your _own Indexer node_
+Now we need to improve our setup to meet "production" demands
 
 # Run separate Indexer and Query nodes
 
-So far we have been running a `graph-node` in "combined-node" mode. This means it performs both indexing and serving queries. Since the demand for each may scale up/down depending on how many subgraphs are syncing, and how many requests we are serving, we need to separate these functions.
+So far we have been running a `graph-node` in "combined-node" mode. This means it performs both indexing and serving queries.
 
-Update `docker-compose.yaml` to create two separate graph-nodes- one in "query-node" mode, and the other in "index-node" mode.
+We need to separate these functions since the demand for each may scale up/down depending on how many subgraphs are syncing, and how many requests we are serving,
+
+Stop your existing graph-nodes, and start the new `docker-compose` in this folder.
+
+```bash
+cd ~/indexer-docker-compose/graph-node/basic && docker-compose down
+
+cd ~/indexer-docker-compose/graph-node/advanced && docker-compose up -d
+```
+
+Take a look at the new `docker-compose.yml`. We will be creating two separate instances of graph-nodes. One in "query-node" mode, and the other in "index-node" mode.
 
 ```yaml
-version: "3"
 services:
-  # Query
-  # adapted from https://github.com/graphprotocol/mission-control-indexer/blob/8cc08c4c72ed7a7fcab2bfeace172626c9d08ee3/k8s/base/query-node/deployment.yaml
   graph-node-query:
-    image: graphprotocol/graph-node:latest
-    ports:
-      - "8000:8000" # http
-      - "8001:8001" # ws
-      - "8030:8030" # index-node
-    depends_on:
-      - postgres
+    # ...
     environment:
-      postgres_host: postgres:5432
-      postgres_user: graph-node
-      postgres_pass: let-me-in
-      postgres_db: graph-node
-      ipfs: "https://testnet.thegraph.com/ipfs/"
-      ethereum: "mainnet:<your-web3-provider>"
       node_role: "query-node"
       node_id: "query-node"
-      GRAPH_KILL_IF_UNRESPONSIVE: "true"
-      EXPERIMENTAL_SUBGRAPH_VERSION_SWITCHING_MODE: "synced" # ?
-      RUST_LOG: info
-    restart: always
-  # Index
-  # adapted from https://github.com/graphprotocol/mission-control-indexer/blob/8cc08c4c72ed7a7fcab2bfeace172626c9d08ee3/k8s/base/index-node/stateful_set.yaml
   graph-node-indexer:
-    image: graphprotocol/graph-node:latest
+    # ...
     ports:
       - "8100:8000" # http
       - "8120:8020" # json-rpc
       - "8140:8040" # metrics
-    depends_on:
-      - postgres
     environment:
-      postgres_host: postgres:5432
-      postgres_user: graph-node
-      postgres_pass: let-me-in
-      postgres_db: graph-node
-      ipfs: "https://testnet.thegraph.com/ipfs/"
-      ethereum: "mainnet:<your-web3-provider>"
       node_role: "index-node"
       node_id: "index-node"
-      BLOCK_INGESTOR: "index-node" # Only need to specify one block ingestor
-      GRAPH_KILL_IF_UNRESPONSIVE: "true"
-      RUST_LOG: info
-    restart: always
-
-  postgres:
-    image: postgres
-    ports:
-      - "5432:5432"
-    command: ["postgres", "-cshared_preload_libraries=pg_stat_statements"]
-    environment:
-      POSTGRES_USER: graph-node
-      POSTGRES_PASSWORD: let-me-in
-      POSTGRES_DB: graph-node
-    volumes:
-      - ~/subgraph-data/postgres:/var/lib/postgresql/data
-    restart: always
+      BLOCK_INGESTOR: "index-node"
 ```
 
-A couple things to note here:
+Things to pay attention to:
 
-- Earlier we set postgres to store data in `~/subgraph-data/postgres`. As long as we do the same here, we won't lose any existing subgraph data.
-- We have to bind the second index-node to a different set of ports eg. `81XX`. Your create/deploy commands will need to be updated to reflect this.
-- You should deploy to the index-node, and serve queries to the query-node.
+- Deploying subgraphs is now handled by the "index-node", while queries are handled by the "query-node".
+- We are binding the "index-node" to a different set of ports eg. `81XX`. Your create/deploy commands will need to reflect this port change.
+- In the BASIC guide we set Postgres to store data in `~/subgraph-data/postgres`. Since we do the same here, we won't lose any existing subgraph sync data.
 
-# Add Websocket support, and enable health monitoring
+# Add Websockets & Health Monitoring
 
-In order to support websockets and access health monitoring, we must change our Nginx config. First update the original `indexer.conf` you created earlier to the following:
+## Update Nginx config
 
-```yaml
-  server {
-    server_name indexer.mysite.com;
+In order to support websockets and health monitoring, we must change our Nginx config. Replace the `indexer.conf` you created in the BASIC guide to the final one in the `/nginx` folder of this repo.
 
-    location ^~ /index-node/ {
-      # Remove the /index-node/ again
-      rewrite ^/index-node/(.*)$ /$1 break;
-
-      # Proxy configuration.
-      proxy_pass http://127.0.0.1:8030;
-      proxy_http_version 1.1;
-      proxy_set_header Connection $connection_upgrade;
-      proxy_set_header Host $host;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_cache_bypass $http_upgrade;
-
-      # Gateway timeout.
-      proxy_read_timeout 30s;
-      proxy_send_timeout 30s;
-    }
-
-    location /nginx_status {
-      stub_status;
-      allow 127.0.0.1;
-      deny all;
-    }
-
-    location / {
-      location = / {
-        return 200;
-      }
-
-      # Move WebSocket and HTTP requests into /ws/ and /http/ prefixes;
-      # this allows us to forward both types of requests to different
-      # query node ports
-      if ( $connection_upgrade = "upgrade" ) {
-        rewrite ^(.*)$ /ws/$1;
-      }
-      if ( $connection_upgrade != "upgrade" ) {
-        rewrite ^(.*)$ /http/$1;
-      }
-
-      location /http/ {
-        # Remove the /http/ again
-        rewrite ^/http/(.*)$ $1 break;
-
-        # Proxy configuration.
-        proxy_pass http://127.0.0.1:8000;
-        proxy_http_version 1.1;
-        proxy_set_header Connection $connection_upgrade;
-        proxy_set_header Host $host;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header Host $http_host;
-        proxy_cache_bypass $http_upgrade;
-        proxy_next_upstream error invalid_header http_502;
-
-        # Gateway timeout.
-        proxy_read_timeout 30s;
-        proxy_send_timeout 30s;
-      }
-
-      location /ws {
-        # Remove the /ws/ again
-        rewrite ^/ws/(.*)$ $1 break;
-
-        # Proxy configuration.
-        proxy_pass http://127.0.0.1:8001;
-        proxy_http_version 1.1;
-        proxy_set_header Connection $connection_upgrade;
-        proxy_set_header Host $host;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header Host $http_host;
-        proxy_cache_bypass $http_upgrade;
-
-        # Gateway timeout.
-        proxy_read_timeout 1800s;
-        proxy_send_timeout 1800s;
-      }
-    }
-
-    error_page 404 404.html;
-
-    access_log /var/log/nginx/access.log;
-    error_log /var/log/nginx/error.log;
-  }
+```bash
+sudo cp ~/indexer-docker-compose/nginx/indexer.conf /etc/nginx/sites-enabled
 ```
 
-Next you need to update `/etc/nginx/nginx.conf` to add support for [connection upgrades](http://nginx.org/en/docs/http/websocket.html) as follows:
+Next update `/etc/nginx/nginx.conf` to add support for [Nginx connection upgrades](http://nginx.org/en/docs/http/websocket.html) as follows:
+
+```bash
+sudo sudo nano /etc/nginx/nginx.conf
+```
 
 ```
 http {
-  # existing config...
-
+  # Add this code block within "http"
   map $http_upgrade $connection_upgrade {
           default upgrade;
           ''      close;
@@ -210,8 +89,11 @@ http {
 }
 ```
 
-Now we have support for websockets, and we can make health checks against the query node. A couple caveats here:
+Excellent! Now we have support for websockets, and we can perform health checks against the query node.
 
+Things to pay attention to:
+
+- Health checks are performed against
 - This config only works for the query node on ports `80XX`. You will need to edit it if you want to access your index-node externally.
 
 ## Check Indexer health
