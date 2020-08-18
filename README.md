@@ -1,4 +1,4 @@
-# Running a Graph Protocol Indexer with `docker-compose`
+# Using Nginx / docker-compose to Run a Graph Protocol Indexer
 
 Contributors: @pi0neerpat @patrykadas
 
