@@ -3,13 +3,20 @@
 # Table of Contents
 
 <!-- TOC START min:1 max:2 link:true asterisk:false update:true -->
-
+- [Table of Contents](#table-of-contents)
+- [Outline](#outline)
 - [Set up Grafana and Prometheus](#set-up-grafana-and-prometheus)
-- [Create the grafana dashboards](#create-the-grafana-dashboards)
-  - [Add data sources](#add-data-sources)
-  - [Add the dashboards](#add-the-dashboards)
-- [Expose your Prometheus endpoint](#expose-your-prometheus-endpoint)
+  - [Configure Prometheus.yml](#configure-prometheusyml)
+  - [Update docker-compose.yml](#update-docker-composeyml)
+  - [Test it out](#test-it-out)
+- [Configure Nginx](#configure-nginx)
+- [Create the Grafana dashboards](#create-the-grafana-dashboards)
+  - [Add Data Sources](#add-data-sources)
+  - [Add Dashboards](#add-dashboards)
+- [Final testing](#final-testing)
+- [Next Steps](#next-steps)
 <!-- TOC END -->
+
 
 # Outline
 
