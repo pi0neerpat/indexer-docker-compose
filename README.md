@@ -6,9 +6,7 @@
 </p>
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
-
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 > A guide to set up The Graph infrastructure with Docker Compose / Nginx
@@ -75,14 +73,14 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-  <td align="center"><a href="http://oneclickdapp.com"><img src="https://avatars1.githubusercontent.com/u/35622595?v=4" width="100px;" alt=""/><br /><sub><b>Patrick Gallagher</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=pi0neerpat" title="Documentation">📖</a></td>
+    <td align="center"><a href="http://oneclickdapp.com"><img src="https://avatars1.githubusercontent.com/u/35622595?v=4" width="100px;" alt=""/><br /><sub><b>Patrick Gallagher</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=pi0neerpat" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/yasiryagi"><img src="https://avatars2.githubusercontent.com/u/4862448?v=4" width="100px;" alt=""/><br /><sub><b>yasiryagi</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=yasiryagi" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/pkrasam"><img src="https://avatars1.githubusercontent.com/u/4514654?v=4" width="100px;" alt=""/><br /><sub><b>pk</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=pkrasam" title="Documentation">📖</a></td>
   </tr>
 </table>
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
