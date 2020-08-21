@@ -1,4 +1,7 @@
 <h1 align="center">Welcome to indexer-docker-compose 👋</h1>
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 <p>
   <a href="https://twitter.com/pi0neerpat" target="_blank">
     <img alt="Twitter: pi0neerpat" src="https://img.shields.io/twitter/follow/pi0neerpat.svg?style=social" />
@@ -59,6 +62,26 @@ Contributions are very welcome. Please follow the rToken project [code of conduc
 Don't forget to mention `@pi0neerpat` in the feedback surveys :wink:
 
 Give a ⭐️ if this project helped you!
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/yasiryagi"><img src="https://avatars2.githubusercontent.com/u/4862448?v=4" width="100px;" alt=""/><br /><sub><b>yasiryagi</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=yasiryagi" title="Documentation">📖</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ---
 

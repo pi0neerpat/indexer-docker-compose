@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "yasiryagi",
+      "name": "yasiryagi",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/4862448?v=4",
+      "profile": "https://github.com/yasiryagi",
+      "contributions": [
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "indexer-docker-compose",
+  "projectOwner": "pi0neerpat",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
