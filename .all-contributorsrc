@@ -6,6 +6,15 @@
   "commit": false,
   "contributors": [
     {
+      "login": "pi0neerpat",
+      "name": "Patrick Gallagher",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/35622595?v=4",
+      "profile": "http://oneclickdapp.com",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
       "login": "yasiryagi",
       "name": "yasiryagi",
       "avatar_url": "https://avatars2.githubusercontent.com/u/4862448?v=4",
@@ -13,7 +22,7 @@
       "contributions": [
         "doc"
       ]
-    }
+    },
   ],
   "contributorsPerLine": 7,
   "projectName": "indexer-docker-compose",

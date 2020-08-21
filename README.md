@@ -1,6 +1,6 @@
 <h1 align="center">Welcome to indexer-docker-compose 👋</h1>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 <p>
   <a href="https://twitter.com/pi0neerpat" target="_blank">
@@ -72,6 +72,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
+  <td align="center"><a href="http://oneclickdapp.com"><img src="https://avatars1.githubusercontent.com/u/35622595?v=4" width="100px;" alt=""/><br /><sub><b>Patrick Gallagher</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=pi0neerpat" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/yasiryagi"><img src="https://avatars2.githubusercontent.com/u/4862448?v=4" width="100px;" alt=""/><br /><sub><b>yasiryagi</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=yasiryagi" title="Documentation">📖</a></td>
   </tr>
 </table>
