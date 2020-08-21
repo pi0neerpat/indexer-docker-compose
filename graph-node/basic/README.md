@@ -208,6 +208,13 @@ To remove a subgraph, use this command:
 http post localhost:8020 jsonrpc="2.0" id="1" method="subgraph_remove" params:='{"name": "jannis/gravity"}'
 ```
 
+To reassign a subgraph, use this command (effectively changing the node ID):
+```bash
+http post localhost:8120 jsonrpc="2.0" id="1" method="subgraph_reassign" params:='{"name": "uniswap/uniswap-v2", "ipfs_hash": "QmXKwSEMirgWVn41nRzkT3hpUBw29cp619Gx58XW6mPhZP", "node_id": "something"}'
+```
+If you did not assign a node id at deployment it is assigned "default". 
+To restart the subgraph, assign it to a different node id and then back to the orginal. 
+
 ## Test the Indexer
 
 Great job! Now that you've deployed your subgraph, let's make a call to our indexer to see if it works!
