@@ -22,7 +22,7 @@
       "contributions": [
         "doc"
       ]
-    },
+    }
   ],
   "contributorsPerLine": 7,
   "projectName": "indexer-docker-compose",
