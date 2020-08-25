@@ -25,6 +25,8 @@ Complete these in this following order:
 2. [Graph Node docker-compose - ADVANCED](./graph-node/advanced)
 3. [Monitoring Infra](./monitoring)
 
+If you'd rather skip learning, you can run all the infrastructure in one command using the [insane method](./graph-node/insane). _I do not recommend doing this_.
+
 ### Phase 1 - Staking, Basic Actions & Customization
 
 Getting started with "Indexing-as-a-service"
