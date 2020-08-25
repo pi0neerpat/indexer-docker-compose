@@ -1,0 +1,115 @@
+version: '3'
+services:
+
+  graphnode-query-1:
+    image: graphprotocol/graph-node:latest
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - '8000:8000'
+      - '8001:8001'
+      - '8030:8030'
+    environment:
+      postgres_host: postgres:5432
+      postgres_user: graph-node
+      postgres_pass: <postgres-pass>
+      postgres_db: graph-node
+      ipfs: 'https://testnet.thegraph.com/ipfs/'
+      ethereum: 'mainnet:https://mainnet.infura.io/v3/<key>'
+      GRAPH_NODE_ID: 'missioncontrol_query_1'
+      DISABLE_BLOCK_INGESTOR: 'true'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  graphnode-indexer-1:
+    image: graphprotocol/graph-node:latest
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - '8020:8020'
+      - '8040:8040'
+    environment:
+      postgres_host: postgres:5432
+      postgres_user: graph-node
+      postgres_pass: <postgres-pass>
+      postgres_db: graph-node
+      ipfs: 'https://testnet.thegraph.com/ipfs/'
+      ethereum: '
+        mainnet:https://mainnet.infura.io/v3/<key>
+        ropsten:https://ropsten.infura.io/v3/<key>
+        rinkeby:https://rinkeby.infura.io/v3/<key>
+        goerli:https://goerli.infura.io/v3/<key>
+        kovan:https://kovan.infura.io/v3/<key>
+      '
+      GRAPH_NODE_ID: 'missioncontrol_indexer_1'
+      #GRAPH_ETHEREUM_CLEANUP_BLOCKS: 'true'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  postgres:
+    image: postgres
+    user: '1000:1000'
+    restart: always
+    command: 
+      - "postgres"
+      - "-cshared_preload_libraries=pg_stat_statements"
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: graph-node
+      POSTGRES_PASSWORD: 20b3b5fc7430d88ad8f7a9d5ed4dc6d45805754e212a85bef63668d82bc0dfe4
+      POSTGRES_DB: graph-node
+    volumes:
+      - /data/postgres:/var/lib/postgresql/data
+
+  prometheus:
+    image: prom/prometheus
+    user: '1000:1000'
+    restart: always
+    depends_on:
+      - graphnode-indexer-1
+    command:
+      - "--log.level=warn"
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - /data/prometheus:/prometheus
+
+  grafana:
+    image: grafana/grafana
+    user: '1000:1000'
+    restart: always
+    depends_on:
+      - postgres
+      - prometheus
+    ports:
+      - 3000:3000
+    environment:
+      postgres_host: postgres:5432
+      postgres_user: graph-node
+      postgres_pass: <postgres-pass>
+      postgres_db: graph-node
+    volumes:
+      - ./grafana:/etc/grafana/
+      - /data/grafana:/var/lib/grafana
+
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx:/etc/nginx:ro
+      - /etc/letsencrypt:/etc/letsencrypt
