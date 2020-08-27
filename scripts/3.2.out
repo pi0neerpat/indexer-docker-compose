@@ -1,0 +1,14 @@
+HTTP/1.1 200 OK
+content-length: 211
+content-type: application/json; charset=utf-8
+date: Fri, 21 Aug 2020 12:38:46 GMT
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "result": {
+        "playground": ":8000/subgraphs/name/uniswap/uniswap-v2/graphql",
+        "queries": ":8000/subgraphs/name/uniswap/uniswap-v2",
+        "subscriptions": ":8001/subgraphs/name/uniswap/uniswap-v2"
+    }
+}
