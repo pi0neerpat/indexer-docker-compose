@@ -1,0 +1,14 @@
+HTTP/1.1 200 OK
+content-length: 199
+content-type: application/json; charset=utf-8
+date: Fri, 21 Aug 2020 09:32:24 GMT
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "result": {
+        "playground": ":8000/subgraphs/name/jannis/gravity/graphql",
+        "queries": ":8000/subgraphs/name/jannis/gravity",
+        "subscriptions": ":8001/subgraphs/name/jannis/gravity"
+    }
+}
