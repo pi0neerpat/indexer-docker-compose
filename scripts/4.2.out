@@ -1,12 +1,14 @@
 HTTP/1.1 200 OK
-content-length: 78
+content-length: 235
 content-type: application/json; charset=utf-8
-date: Fri, 21 Aug 2020 12:43:17 GMT
+date: Fri, 21 Aug 2020 12:43:44 GMT
 
 {
     "id": "1",
     "jsonrpc": "2.0",
     "result": {
-        "id": "eb7939554e975b27971d8a721200f9ee"
+        "playground": ":8000/subgraphs/name/synthetixio-team/synthetix/graphql",
+        "queries": ":8000/subgraphs/name/synthetixio-team/synthetix",
+        "subscriptions": ":8001/subgraphs/name/synthetixio-team/synthetix"
     }
 }
