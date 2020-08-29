@@ -7,7 +7,7 @@
 - DB username
 - DB password
 
-##Create the  DB to be used by the service and agent 
+## Create the  DB to be used by the service and agent 
 Login into the Postgres container command line
 ```bash
 docker exec [container ID] bash
@@ -34,7 +34,7 @@ Bring the container up
 docker-compose up -d
 ```
 
-#Maually Assign GRT
+# Maually Assign GRT
 
 
 Connect to the agent 
