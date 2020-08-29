@@ -17,8 +17,7 @@ services:
       SERVER_DB_NAME: 'user'        #provide DB user
       SERVER_DB_USER: 'DB'          #provide DB name
       SERVER_DB_PASSWORD: 'passwd'  #provide DB password
-    restart: always
-	
+    restart: always	
   indexer-agent:
     image: graphprotocol/indexer-service:latest
     ports:
