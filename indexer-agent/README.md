@@ -112,9 +112,11 @@ sudo systemctl reload nginx
  If facing NPM issues please see https://github.com/graphprotocol/mission-control-indexer/wiki/Troubleshooting
  
 # Moment of truth:
+
+ ```bash
  graph indexer connect http://127.0.0.1:18000/
  graph indexer status
-
+ ```
 
 # Add the indexer service to Prometheus
 
