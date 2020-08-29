@@ -4,10 +4,11 @@ services:
     image: graphprotocol/indexer-service:latest
     ports:
       - "7600:7600"
+      - "7300:7300"
     environment:
       INDEXER_SERVICE_PORT: '7600'
       INDEXER_SERVICE_GRAPH_NODE_QUERY_ENDPOINT: 'http://[IP]:8000/' # replace [IP]
-	  INDEXER_SERVICE_GRAPH_NODE_STATUS_ENDPOINT: 'http://[IP]:8030/graphql' # replace [IP]
+      INDEXER_SERVICE_GRAPH_NODE_STATUS_ENDPOINT: 'http://[IP]:8030/graphql' # replace [IP]
       INDEXER_SERVICE_NETWORK_SUBGRAPH_ENDPOINT: 'https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-rinkeby'
       INDEXER_SERVICE_ETHEREUM: 'https://rinkeby.infura.io/v3/[project ID]' #replace [project ID]
       INDEXER_SERVICE_MNEMONIC: '*** ***** *****'
@@ -30,7 +31,8 @@ services:
       INDEXER_AGENT_GRAPH_NODE_ADMIN_ENDPOINT: 'http://[IP]:8020/'    # replace [IP]
       INDEXER_SERVICE_GRAPH_NODE_STATUS_ENDPOINT: 'http://[IP]:8030/graphql' # replace [IP]
       INDEXER_AGENT_PUBLIC-INDEXER-URL: 'URL' # replace URL
-	  INDEXER_AGENT_INDEX_NODE_IDS: '["default", "subgraph_uniswap", "subgraph_synthetixio", "subgraph_gravity"]'
+      INDEXER_AGENT_NETWORK_SUBGRAPH_ENDPOINT: 'https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-rinkeby'
+      INDEXER_AGENT_INDEX_NODE_IDS: 'default' #Makes ure it match the node ID when the subgraphs are initiated '["default", "subgraph_uniswap", "subgraph_synthetixio", "subgraph_gravity"]'
       INDEXER_AGENT_INDEXER-MANAGEMENT-PORT: '18000'
       INDEXER_AGENT_ETHEREUM: 'https://rinkeby.infura.io/v3/[project ID]' #replace [project ID]
       INDEXER_AGENT_MNEMONIC: '*** ***** *****'
