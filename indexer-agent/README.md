@@ -2,7 +2,7 @@
 ## You will need:
 - Indexer query node IP
 - Ethereum node 
-- DB IP.
+- DB IP
 - DB name
 - DB username
 - DB password
