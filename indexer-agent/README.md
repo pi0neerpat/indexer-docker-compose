@@ -39,11 +39,13 @@ docker-compose up -d
 
 Connect to the agent 
 
+```bash
 sudo graph indexer connect http://127.0.0.1:18000
 ```
 
 
 Allocate GRT for each subgraph and restart
+
 ```bash
 sudo graph indexer rules set QmbeDC4G8iPAUJ6tRBu99vwyYkaSiFwtXWKwwYkoNphV4X allocationAmount 10
 sudo graph indexer rules set QmTXzATwNfgGVukV1fX2T6xw9f6LAYRVWpsdXyRWzUR2H9 allocationAmount 10
