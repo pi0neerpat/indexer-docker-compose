@@ -114,7 +114,7 @@ sudo systemctl reload nginx
  graph indexer status
 
 
-#Add the indexer service to Prometheus
+# Add the indexer service to Prometheus
 
  ```bash
 nano prometheus.yml
