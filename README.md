@@ -6,7 +6,7 @@
 </p>
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 > A guide to set up The Graph infrastructure with Docker Compose / Nginx
@@ -23,13 +23,15 @@ Complete these in this following order:
 2. [Graph Node docker-compose - ADVANCED](./graph-node/advanced)
 3. [Monitoring Infra](./monitoring)
 
+If you'd rather skip learning, you can run all the infrastructure in one command using the [insane method](./graph-node/insane). _I do not recommend doing this_.
+
 ### Phase 1 - Staking, Basic Actions & Customization
 
 Getting started with "Indexing-as-a-service"
 
 _TODO_
 
-1. Indexer Service
+1. [Indexer Service](./indexer-agent)
 2. Indexer Agent
 3. Indexer CLI
 4. Monitoring

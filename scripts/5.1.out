@@ -1,0 +1,70 @@
+HTTP/1.1 200 OK
+access-control-allow-headers: Content-Type, User-Agent
+access-control-allow-methods: GET, OPTIONS, POST
+access-control-allow-origin: *
+content-length: 757
+content-type: application/json
+date: Thu, 27 Aug 2020 04:24:11 GMT
+
+{
+    "data": {
+        "indexingStatuses": [
+            {
+                "chains": [
+                    {
+                        "latestBlock": {
+                            "number": "10703663"
+                        }
+                    }
+                ],
+                "fatalError": null,
+                "health": "healthy",
+                "node": "default",
+                "subgraph": "QmbeDC4G8iPAUJ6tRBu99vwyYkaSiFwtXWKwwYkoNphV4X",
+                "synced": true
+            },
+            {
+                "chains": [
+                    {
+                        "latestBlock": {
+                            "number": "7539663"
+                        }
+                    }
+                ],
+                "fatalError": null,
+                "health": "healthy",
+                "node": "index_node",
+                "subgraph": "Qme2hDXrkBpuXAYEuwGPAjr6zwiMZV4FHLLBa3BHzatBWx",
+                "synced": false
+            },
+            {
+                "chains": [
+                    {
+                        "latestBlock": {
+                            "number": "10703663"
+                        }
+                    }
+                ],
+                "fatalError": null,
+                "health": "healthy",
+                "node": "index_node",
+                "subgraph": "QmTXzATwNfgGVukV1fX2T6xw9f6LAYRVWpsdXyRWzUR2H9",
+                "synced": true
+            },
+            {
+                "chains": [
+                    {
+                        "latestBlock": {
+                            "number": "10488047"
+                        }
+                    }
+                ],
+                "fatalError": null,
+                "health": "healthy",
+                "node": "index_node",
+                "subgraph": "QmXKwSEMirgWVn41nRzkT3hpUBw29cp619Gx58XW6mPhZP",
+                "synced": false
+            }
+        ]
+    }
+}

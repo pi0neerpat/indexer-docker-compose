@@ -21,7 +21,7 @@
 
 ## Configure Prometheus.yml
 
-For Prometheus to know where to scrape data from, we need to know the Docker bride IP. First determine the ID for any `graph-node` container, and then use this command to get the bridge IP.
+For Prometheus to know where to scrape data from, we need to know the Docker bridge IP. First determine the ID for any `graph-node` container, and then use this command to get the bridge IP.
 
 ```bash
 docker ps

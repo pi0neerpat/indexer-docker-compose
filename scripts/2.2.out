@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+content-length: 78
+content-type: application/json; charset=utf-8
+date: Fri, 21 Aug 2020 12:32:24 GMT
+
+{
+    "id": "1",
+    "jsonrpc": "2.0",
+    "result": {
+        "id": "a060b9917b0c41e13c12ca49e99632be"
+    }
+}
