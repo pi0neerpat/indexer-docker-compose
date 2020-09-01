@@ -8,8 +8,22 @@ The indexer agent is a small component that comes with a small database with may
 
 ## Install Indexer Service & Agent
 
+Set npm to use The Graph's private package registry. I recommend not using yarn, as it's caused me authentication issues in the past with [Verdaccio](https://verdaccio.org/).
+
 ```bash
-npm i -g @graphprotocol/indexer-service --registry=https://testnet.thegraph.com/npm-registry
+# Don't use yarn
+npm set registry https://testnet.thegraph.com/npm-registry
+npm login
+```
+Install the  CLI tools and revert your registry back to the original.
+
+```bash
+# Install the latest
+npm install -g @graphprotocol/indexer-cli
+npm install -g @graphprotocol/indexer-agent
+npm install -g @graphprotocol/indexer-service # optional
+
+npm set registry https://registry.npmjs.com/
 ```
 
 - Postgres for Agent
