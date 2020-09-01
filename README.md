@@ -77,8 +77,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="http://oneclickdapp.com"><img src="https://avatars1.githubusercontent.com/u/35622595?v=4" width="100px;" alt=""/><br /><sub><b>Patrick Gallagher</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=pi0neerpat" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/yasiryagi"><img src="https://avatars2.githubusercontent.com/u/4862448?v=4" width="100px;" alt=""/><br /><sub><b>yasiryagi</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=yasiryagi" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/pkrasam"><img src="https://avatars1.githubusercontent.com/u/4514654?v=4" width="100px;" alt=""/><br /><sub><b>pk</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=pkrasam" title="Documentation">📖</a></td>
-    <td align="center"><a href="http://hadriencroubois.com"><img src="https://avatars0.githubusercontent.com/u/2432299?v=4" width="100px;" alt=""/><br /><sub><b>Hadrien Croubois</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=amxx" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/pkrasam"><img src="https://avatars1.githubusercontent.com/u/4514654?v=4" width="100px;" alt=""/><br /><sub><b>pk</b></sub></a><br /><a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=pkrasam" title="Documentation">📖</a> <a href="https://github.com/pi0neerpat/indexer-docker-compose/commits?author=pkrasam" title="Code">💻</a></td>
   </tr>
 </table>
 
