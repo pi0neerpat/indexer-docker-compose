@@ -52,7 +52,7 @@ _TODO_
 
 👤 **Patrick Gallagher**
 
-- Website: oneclickdapp.com
+- Website: https://patrickgallagher.dev
 - Twitter: [@pi0neerpat](https://twitter.com/pi0neerpat)
 - Github: [@pi0neerpat](https://github.com/pi0neerpat)
 
