@@ -63,6 +63,11 @@ You should receive Status code `402: Payment required`.
 
 TODO
 
+---
+Contributions from @pkrasam
+
+TODO: combine this with the rest of the documentation
+
 ## Indexer Management GF_SERVER_ROOT_URL
 
 port `10000`

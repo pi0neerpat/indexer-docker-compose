@@ -1,6 +1,10 @@
 <h1 align="center">Performance Testing</h1>
 
-This is a dump to determine performace at specific hardware sizes.
+Eventually this is where I'll discuss performance enhanecements. For now it is just notes from my own testing at specific hardware sizes.
+
+---
+
+# Methods
 
 ```bash
 npm install -g typescript ts-node
@@ -12,6 +16,8 @@ All tested with:
 
 - single indexer node, single query node
 - active indexer with fully synced moloch and uniswap
+
+# Results
 
 ## Standard phase 0 harness
 
@@ -173,3 +179,11 @@ TODO:
 - use Traefik to set up multiple index nodes and try to increase req/min beyond 1k
 - Change postgres config to allow more connections
 - Does query node have some setting for connections. Couldn't find it in graph-node docs. Check my other notes
+
+
+# Picking a smaller server
+
+- Total db is 98GB for the phase 0 subgraphs, so likely will need 1TB. Unless I don't keep blocks. Will have to check whether this indeed does degrade performance if the archive node is nearby (!)
+- Choosing the $40/mo DO droplet has 4vCPU, 8GB RAM, 160GB SSD, which seems like enough
+- Similar server on Hetzner Cloud is 12 EUR ($14)
+- For comparable price of 34 EUR, can get a Hetzner Dedicated AX41-NVMe has 64 GB RAM, 6 CPU, 2x512GB SSD.

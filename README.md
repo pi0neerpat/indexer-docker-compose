@@ -13,7 +13,7 @@
 
 ## Usage
 
-See guides for individual phases
+If you're new to the self-hosted world, there's a useful guide to setting up a new server in `/provision`, although you probably want some more practice with hosting your own apps before diving into this challenge.
 
 ### Phase 0 - Deploy Graph Node
 
@@ -23,18 +23,24 @@ Complete these in this following order:
 2. [Graph Node docker-compose - ADVANCED](./graph-node/advanced)
 3. [Monitoring Infra](./monitoring)
 
-If you'd rather skip learning, you can run all the infrastructure in one command using the [insane method](./graph-node/insane). _I do not recommend doing this_.
+#### Extra Resources:
+
+- See `/graph-node/insane` for a full phase 0 docker-compose from @amxx
 
 ### Phase 1 - Staking, Basic Actions & Customization
 
 Getting started with "Indexing-as-a-service"
 
-_TODO_
-
 1. [Indexer Service](./indexer-agent)
 2. Indexer Agent
 3. Indexer CLI
 4. Monitoring
+
+#### Extra Resources:
+
+- See `/indexer-agent/untested` for a full phase 1 docker-compose from @amxx
+- See `/indexer-agent/scripts` for installation and testing scripts from @pkrasam
+
 
 ### Phase 2 - Honest Profit Maximization
 
