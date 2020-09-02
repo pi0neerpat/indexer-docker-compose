@@ -164,7 +164,7 @@ indexers.csv queries.csv | tee report.md
 
 | Hardware   | RAM Baseline | RAM Load | System Baseline | System Load | req/min |
 | :--------- | :----------- | :------- | --------------- | ----------- | ------- |
-| 32GB 8vCPU | 1.8GB        | 2.03     | 3%              | 78%         |         |
+| 32GB 8vCPU | 1.8GB        | 2.03     | 3%              | 78%         | 1,000   |
 
 ## Add a second query node?
 
