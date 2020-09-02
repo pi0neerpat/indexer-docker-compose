@@ -8,6 +8,11 @@ npm install -g typescript ts-node
 
 Check a test passes with `cat report.csv`
 
+All tested with:
+
+- single indexer node, single query node
+- active indexer with fully synced moloch and uniswap
+
 ## Standard phase 0 harness
 
 300s test: `./cli test --output report.csv indexers.csv queries.csv | tee report.md`
@@ -74,7 +79,7 @@ indexers.csv queries.csv | tee report.md
 | :--------- | :----------- | :------- | --------------- | ----------- | ------- |
 | 32GB 8vCPU | 1.81GB       | 1.94     | 4%              | 42          | 203     |
 
-## 5 min - high connections
+## 5 min - 100 connections
 
 ```bash
 ./cli test --output report.csv --duration 300 \
@@ -88,7 +93,7 @@ indexers.csv queries.csv | tee report.md
 | :--------- | :----------- | :------- | --------------- | ----------- | ------- |
 | 32GB 8vCPU | 1.81GB       | 1.95     | 4%              | 48          | 220     |
 
-## 5 min - test from 2 different machines
+## 5 min - 2 machines with 200 connections
 
 ```bash
 ./cli test --output report.csv --duration 300 \
@@ -102,7 +107,7 @@ indexers.csv queries.csv | tee report.md
 | :--------- | :----------- | :------- | --------------- | ----------- | ------- |
 | 32GB 8vCPU | 1.9GB        | 2.0      | 3%              | 78%         | 1,000   |
 
-## 5 min - test from 3 different machines
+## 5 min - 3 machines with 300 connections
 
 ```bash
 ./cli test --output report.csv --duration 300 \
@@ -116,7 +121,7 @@ indexers.csv queries.csv | tee report.md
 | :--------- | :----------- | :------- | --------------- | ----------- | ------- |
 | 32GB 8vCPU | 1.9GB        | 2.01     | 3%              | 81          | 1,100   |
 
-## 5 min - 3 machines with more connections
+## 5 min - 3 machines with 900 connections
 
 ```bash
 ./cli test --output report.csv --duration 300 \
@@ -133,7 +138,7 @@ indexers.csv queries.csv | tee report.md
 - This is 900 connections for a single indexer. Not sure that is even supported?
 - Internal server error on grafana - "Annotation query failed"
 
-## 5 min - 2 machines with 300 connections total
+## 5 min - 2 machines with 300 connections
 
 ```bash
 ./cli test --output report.csv --duration 300 \
@@ -146,6 +151,20 @@ indexers.csv queries.csv | tee report.md
 | Hardware   | RAM Baseline | RAM Load | System Baseline | System Load | req/min |
 | :--------- | :----------- | :------- | --------------- | ----------- | ------- |
 | 32GB 8vCPU | 1.89GB       | 1.93     | 3%              | 80%         | 950     |
+
+## 5 min - 4 machines with 400 connections
+
+```bash
+./cli test --output report.csv --duration 300 \
+--max-error-rate .000005 \
+--min-request-rate 10 \
+--connections-per-indexer 100 \
+indexers.csv queries.csv | tee report.md
+```
+
+| Hardware   | RAM Baseline | RAM Load | System Baseline | System Load | req/min |
+| :--------- | :----------- | :------- | --------------- | ----------- | ------- |
+| 32GB 8vCPU | 1.8GB        | 2.03     | 3%              | 78%         |         |
 
 ## Add a second query node?
 
