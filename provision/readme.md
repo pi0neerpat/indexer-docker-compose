@@ -29,7 +29,7 @@ nvm install --lts
 nvm use --lts
 ```
 
-Install docker  using [these instructions](https://docs.docker.com/engine/install/ubuntu/)
+Install docker using [these instructions](https://docs.docker.com/engine/install/ubuntu/)
 
 
 If you're migrating from an existing server, don't forget the `-P ` option on `rsync`
