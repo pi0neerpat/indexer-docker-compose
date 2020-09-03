@@ -1,102 +1,134 @@
-<h1>Phase 1 - Staking, Basic Actions & Customization</h1>
+# Setup docker-compose file
+## You will need:
+- Indexer query node IP
+- Ethereum node 
+- DB IP
+- DB name
+- DB username
+- DB password
 
-> :warning: these docs have not been finalized, and are mostly just my notes at the moment
-
-## What is an Indexer Agent?
-
-The indexer agent is a small component that comes with a small database with maybe 200 rows. It doesn't require a lot of CPU, therefore it can be run on the same machine as the graph-nodes.
-
-## Install Indexer Service & Agent
+## Create the  DB to be used by the service and agent 
+Login into the Postgres container command line
+```bash
+docker exec [container ID] bash
+```
+issue the command 
 
 ```bash
-npm i -g @graphprotocol/indexer-service --registry=https://testnet.thegraph.com/npm-registry
+createdb -U [username] -W [New DB name]
 ```
 
-- Postgres for Agent
-- Connection to Rinkeby node: Contract interactions-only, no syncing
 
-## Set up Agent configs
+Make sure that the wallet used has the GRT token (contact address: 0xa416a7974c2ff62ffa69b2aa8cef78b72326916a )
 
-TODO
+Please note since the ports 8000,8020 and 8030 are already in use by the the indexer and query node, we have opted to map it top 8200,8220 and 8230
 
-rinkeby node can be frree Infura node!
+Find out the bridge IPs for the graph query node and database 
+```bash
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.Gateway}}{{end}}' [container]
+```
 
-public indexer url http://localhost:7600
-
-> :warning: this will be made public on-chain!
-
-geo-coordinates useful for customer to decide which indxer to use, based on location
-
-## Running the agent
-
-Pass Rinkeby account mnemonic
-Netwoirk subgraph endpoint
-
-## Run the Indexer serive
+Bring the container up 
 
 ```bash
-./run-indexer-service.sh
+docker-compose up -d
 ```
 
-Provides metrics you can scrape with Prometheus,
-Queries can be sent to port `7600`, where to
+# Maually Assign GRT
 
-You should receive Status code `402: Payment required`.
 
-### Set up payments to test a real the query
-
-## Run the Agent
-
-TODO
-
-## Indexer Management GF_SERVER_ROOT_URL
-
-port `10000`
-
-- Checks that you have 1,000 Graph tokens
-
-- Continuous checks what subgraphs are deployed, and checks whether they are worth indexing. It will allocate a portion of your stake towards the "interesting" ones.
-- Every allocation to a certain subgraph has a limited lifetime. Eventually the feels will go on-chain and be distributed.
-
-## Commands
-
-connect to local indexer mgmt api. can install CLI on server
-
-- install on machine, with port forwarding (ssh -L)
-
-Check that endpoints
+Connect to the agent 
 
 ```bash
-graph indexer status
-# Report may not be correct
+sudo graph indexer connect http://127.0.0.1:18000
 ```
 
-Check that your endpoints are correct:
 
-> main "service": For performing queries
-> Block processing "status":Checks health of subgraphs
-> State "channels": For payments
-
-## Indexing Rules
+Allocate GRT for each subgraph and restart
 
 ```bash
-graph indexer --help
+sudo graph indexer rules set QmbeDC4G8iPAUJ6tRBu99vwyYkaSiFwtXWKwwYkoNphV4X allocationAmount 10
+sudo graph indexer rules set QmTXzATwNfgGVukV1fX2T6xw9f6LAYRVWpsdXyRWzUR2H9 allocationAmount 10
+sudo graph indexer rules set Qme2hDXrkBpuXAYEuwGPAjr6zwiMZV4FHLLBa3BHzatBWx allocationAmount 10
+sudo graph indexer rules set QmXKwSEMirgWVn41nRzkT3hpUBw29cp619Gx58XW6mPhZP allocationAmount 10
+
+ 
+sudo graph indexer rules start QmbeDC4G8iPAUJ6tRBu99vwyYkaSiFwtXWKwwYkoNphV4X
+sudo graph indexer rules start Qme2hDXrkBpuXAYEuwGPAjr6zwiMZV4FHLLBa3BHzatBWx
+sudo graph indexer rules start QmXKwSEMirgWVn41nRzkT3hpUBw29cp619Gx58XW6mPhZP
+sudo graph indexer rules start QmTXzATwNfgGVukV1fX2T6xw9f6LAYRVWpsdXyRWzUR2H9
+
+sudo graph indexer rules get all --merged
 ```
 
--`indexer rules set` : set and change rules -`indexer rules start (always)` : always index a subgraph, regardless of parameters
+*********************************************************************************
 
-Check current rules with
+# Route Indexer service requests with Nginx
 
 ```bash
-indexer rules get [global/all]
+sudo nano /etc/nginx/sites-enabled/indexer.conf
 ```
 
-Set a basic rule
+
+Paste the following, and update your `URL`. 
+
+```js
+server {
+    server_name URL;
+
+    location / {
+      proxy_pass http://127.0.0.1:7600;
+      proxy_http_version 1.1;          
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header Host $host;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_cache_bypass $http_upgrade;      
+    }
+}
+```
+
+Reload nginx
 
 ```bash
-graph indexer set global minAverageQueryFees 10000
-```
+sudo nginx -t
+sudo systemctl reload nginx
+``` 
+ 
 
-```bash
-yarn add b258
+
+# Install the graph CLI
+ Login to the NPM usig the username and password email to you.
+ 
+ ```bash
+ sudo npm login   --registry https://testnet.thegraph.com/npm-registry/
+ ```
+ 
+ Install ndexer CLI
+ 
+ ```bash
+ sudo npm install -g   --registry https://testnet.thegraph.com/npm-registry/   @graphprotocol/graph-cli@0.19.0-alpha.0   @graphprotocol/indexer-cli
+ ```
+ 
+ If facing NPM issues please see https://github.com/graphprotocol/mission-control-indexer/wiki/Troubleshooting
+ 
+# Moment of truth:
+
+ ```bash
+ graph indexer connect http://127.0.0.1:18000/
+ graph indexer status
+ ```
+
+# Add the indexer service to Prometheus
+
+ ```bash
+nano prometheus.yml
+ ```
+ 
+```js
+  - job_name: 'IndexerSerivce'
+    metrics_path: /
+    static_configs:
+      - targets:
+        - 172.19.0.1:7300
 ```
+ 
