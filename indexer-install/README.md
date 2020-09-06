@@ -1,121 +1,217 @@
 <h1>Phase 1 - Staking, Basic Actions & Customization</h1>
 
-> :warning: these docs have not been finalized, and are mostly just my notes at the moment
+Congrats on making it to Phase 1! Now its time to add some query handling & monetization tooling with two new additions- the indexer agent and indexer service.
 
-## What is an Indexer Agent?
+During Phase 0 it seemed we would need a lot more power than we actually do. Rather than continue to overpay for one large under-utilized server, I decided to downsize significantly, while using Docker Swarm to scale up as needed. I compared performance before/after if you're interested in [seeing the results](../performance). Just be mindful that the phase0 test harness is not good at approximating actual usage, since queries are repeated, thus responses are cached.
 
-The indexer agent is a small component that comes with a small database with maybe 200 rows. It doesn't require a lot of CPU, therefore it can be run on the same machine as the graph-nodes.
+Lets migrate our infra to Docker Swarm!
 
-## Install Indexer Service & Agent
+> Salty about having to learn something new? See [non-swarm](./non-swarm) for the vanilla docker-compose provided by @amxx (thanks!). I haven't tested it myself, so you're on your own with that one.
 
-Set npm to use The Graph's private package registry. I recommend not using yarn, as it's caused me authentication issues in the past with [Verdaccio](https://verdaccio.org/).
+## Definitions
 
-```bash
-# Don't use yarn
-npm set registry https://testnet.thegraph.com/npm-registry
-npm login
-```
-Install the  CLI tools and revert your registry back to the original.
+- **Indexer Agent**: A small component that comes with a small database with maybe 200 rows. It doesn't require a lot of CPU, therefore it can be run on the same machine as the graph-nodes.
+- **Indexer Service**: TODO
 
-```bash
-# Install the latest
-npm install -g @graphprotocol/indexer-cli
-npm install -g @graphprotocol/indexer-agent
-npm install -g @graphprotocol/indexer-service # optional
+# Set up Swarm + Traefik
 
-npm set registry https://registry.npmjs.com/
-```
+If you're like me, and never used Swarm before, then start with this tutorial https://dockerswarm.rocks/ which was adapted here for convenience. If you'd rather dive in, you can try following theses commands.
 
-- Postgres for Agent
-- Connection to Rinkeby node: Contract interactions-only, no syncing
-
-## Set up Agent configs
-
-TODO
-
-rinkeby node can be frree Infura node!
-
-public indexer url http://localhost:7600
-
-> :warning: this will be made public on-chain!
-
-geo-coordinates useful for customer to decide which indxer to use, based on location
-
-## Running the agent
-
-Pass Rinkeby account mnemonic
-Netwoirk subgraph endpoint
-
-## Run the Indexer serive
+Once you're done setting up swarm, jump to the [next section](#deploy-the-indexer-stack).
 
 ```bash
-./run-indexer-service.sh
+# Connect as root
+ssh root@172.173.174.175
+
+export USE_HOSTNAME=traefik.mysite.com
+echo $USE_HOSTNAME > /etc/hostname
+hostname -F /etc/hostname
 ```
 
-Provides metrics you can scrape with Prometheus,
-Queries can be sent to port `7600`, where to
-
-You should receive Status code `402: Payment required`.
-
-### Set up payments to test a real the query
-
-## Run the Agent
-
-TODO
-
----
-Contributions from @pkrasam
-
-TODO: combine this with the rest of the documentation
-
-## Indexer Management GF_SERVER_ROOT_URL
-
-port `10000`
-
-- Checks that you have 1,000 Graph tokens
-
-- Continuous checks what subgraphs are deployed, and checks whether they are worth indexing. It will allocate a portion of your stake towards the "interesting" ones.
-- Every allocation to a certain subgraph has a limited lifetime. Eventually the feels will go on-chain and be distributed.
-
-## Commands
-
-connect to local indexer mgmt api. can install CLI on server
-
-- install on machine, with port forwarding (ssh -L)
-
-Check that endpoints
+Start a new docker swarm
 
 ```bash
-graph indexer status
-# Report may not be correct
+docker swarm init
 ```
 
-Check that your endpoints are correct:
-
-> main "service": For performing queries
-> Block processing "status":Checks health of subgraphs
-> State "channels": For payments
-
-## Indexing Rules
+If you already have additional machines ready, you can add them to the swarm now. Otherwise skip this step.
+it.
 
 ```bash
-graph indexer --help
+docker swarm join-token worker
 ```
 
--`indexer rules set` : set and change rules -`indexer rules start (always)` : always index a subgraph, regardless of parameters
-
-Check current rules with
+Check the cluster is running
 
 ```bash
-indexer rules get [global/all]
+docker node ls
 ```
 
-Set a basic rule
+## Add Traefik
 
-```bash
-graph indexer set global minAverageQueryFees 10000
-```
+Create an overlay network
 
 ```bash
-yarn add b258
+docker network create --driver=overlay traefik-public
 ```
+
+> The overlay network sits on top of (overlays) the host-specific networks and allows containers connected to it to communicate securely when encryption is enabled
+
+Now set environment variables
+
+```bash
+export NODE_ID=$(docker info -f '{{.Swarm.NodeID}}')
+docker node update --label-add traefik-public.traefik-public-certificates=true $NODE_ID
+export EMAIL=patrick@somemailserver.com
+export DOMAIN=traefik.mysite.com
+export USERNAME=admin
+export PASSWORD=changethis
+# Use openssl to generate the password hash
+export HASHED_PASSWORD=$(openssl passwd -apr1 $PASSWORD)
+echo $HASHED_PASSWORD
+# > $apr1$89eqM5Ro$CxaFELthUKV21DpI3UTQO.
+```
+
+Download a template docker-compose file for Traefik
+
+```bash
+curl -L dockerswarm.rocks/traefik.yml -o traefik.yml
+# Check the contents traefik.yml
+cat traefik.yml
+# Deploy
+docker stack deploy -c traefik.yml traefik
+# Check it
+docker stack ps traefik
+docker service logs traefik_traefik
+```
+
+### Using Traefik
+
+Log in to traefik.mysite.com to see the dashboard
+
+> If you need to read the client IP in your applications/stacks using the X-Forwarded-For or X-Real-IP headers provided by Traefik, you need to make Traefik listen directly, not through Docker Swarm mode. See "Getting the client IP"
+
+## Add Swarmpit for monitoring
+
+I highly recommend following these instructions to set up a Swarmpit dashboard https://dockerswarm.rocks/swarmpit/
+
+# Deploy the Indexer Stack
+
+First pull down the repo
+
+```bash
+git clone git@github.com:pi0neerpat/indexer-docker-compose.git
+cd indexer-docker-compose/indexer-install
+```
+
+To allow Traefik to "see" our docker containers, we need to update our docker-compose file with the labels. Docker labels don’t do anything by themselves, but Traefik reads these so it knows how to treat containers. Note that this need to be service-level labels rather than container-level (i.e. under the deploy tag).
+
+I've already done the heavy lifting and created `graph.yml` in this folder.
+
+```yml
+networks:
+  # Network between all containers in the stack
+  - default
+  # Networks used to communicate with Traefik
+  - traefik-public
+deploy:
+  labels:
+    - traefik.enable=true
+    - traefik.docker.network=traefik-public
+    - traefik.constraint-label=traefik-public
+    # A router called "graph-query-http" should accept requests from eg. graph.mysite.com
+    - "traefik.http.routers.graph-query-http.rule=Host(`${GRAPH_QUERY_SERVER_DOMAIN}`)"
+    # The router should accept requests via http / port 80
+    - traefik.http.routers.graph-query-http.entrypoints=http
+    # The router should use the middleware "https-redirect"
+    - traefik.http.routers.graph-query-http.middlewares=https-redirect
+    # A router called "graph-query-https"  should accept requests from eg. graph.mysite.com
+    - "traefik.http.routers.graph-query-https.rule=Host(`${GRAPH_QUERY_SERVER_DOMAIN}`)"
+    # The router should accept requests via https / port 443
+    - traefik.http.routers.graph-query-https.entrypoints=https
+    # SSL cert stuff
+    - traefik.http.routers.graph-query-https.tls=true
+    - traefik.http.routers.graph-query-https.tls.certresolver=le
+    # A service called "graph-query" should be created using port 8000 of this docker container
+    - traefik.http.services.graph-query.loadbalancer.server.port=8000
+```
+
+If you're continuing from the phase 0 tutorial, you will need to update the location of the postgres volume in `graph.yml`.
+
+```yml
+postgres:
+  volumes:
+    - /data/postgres:/var/lib/postgresql/data
+    # Change to
+    - ~/subgraph-data/postgres:/var/lib/postgresql/data
+```
+
+Now specify the variables for your set up by copying `.template.env` to `.env` and editing accordingly.
+
+Next, create a label in this node, so that the Postgres database is always deployed to the same node and uses the existing volume:
+
+```bash
+export NODE_ID=$(docker info -f '{{.Swarm.NodeID}}')
+docker node update --label-add postgres.postgres-data=true $NODE_ID
+```
+
+Create some necessary directories
+
+```bash
+mkdir -p /data/grafana /data/prometheus /data/postgres
+```
+
+Log in to docker using your credentials and pull the private images.
+
+```bash
+docker login
+docker pull graphprotocol/indexer-service:latest
+docker pull graphprotocol/indexer-agent:latest
+```
+
+Load the `.env` file (this command is a bit wonky, so feel free to suggest a better approach), and then deploy the indexer stack.
+
+```bash
+source .env
+# OR
+export $(grep -v '^#' .env | xargs -0)
+
+docker stack deploy -c graph.yml graph
+```
+
+If you ever need to change `graph.yml` or `.env` configs, simply run these commands again. There is no need to stop the stack or services from running.
+
+Now you should be able to access your grafana at the url you provided for `GF_SERVER_DOMAIN`. The Dashboards should already be created for you.
+
+If you need to create fresh subgraphs, use the commands from the basic tutorial [here](../graph-node/basic).
+
+If you're migrating from an existing set up, your subgraphs might not being syncing right away. This is likely due to a change in `node_id` the subgraphs are assigned to. Change the `node_id` using `subgraph_reassign`.
+
+```bash
+http post <indexer>:8020  \
+jsonrpc="2.0"  id="1"  \
+method="subgraph_reassign"  \
+params:='{"name": "molochventures/moloch", "ipfs_hash": \
+"QmTXzATwNfgGVukV1fX2T6xw9f6LAYRVWpsdXyRWzUR2H9", "node_id": "missioncontrol_indexer_1"}'
+```
+
+## Indexer Agent
+
+If you check the indexer-service status, you will see that both the indexer-agent/service fail to start due to a missing database. To add it, open a terminal inside the postgres container.
+
+```bash
+docker exec -ti <container_id> bash
+
+psql -U graph-node
+
+CREATE DATABASE indexer;
+```
+
+# Whats next?
+
+Awesome work! Hopefully you learned some good stuff today. Head back to the main page to learn how to interact with the Agent, and other steps in Phase1.
+
+# Additional Resources
+
+- [non-swarm](./non-swarm) docker-compose provided by @amxx
+- [Convenience scripts](./scripts) provided by @pkrasam
