@@ -36,14 +36,16 @@ Getting started with "Indexing-as-a-service"
 #### Mission 1
 
 1. Install the Indexer using Swarm - [indexer-install](./indexer-install)
-2. Use the Indexer-Agent CLI - [agent-usage](./agent-usage)
+2. (Soon) Using the Indexer-Agent CLI - [indexer-agent](./indexer-agent)
 
 #### Mission 2
 
+_TODO_
+
 #### Extra Resources:
 
-- See `/indexer-agent/untested` for a full phase 1 docker-compose from @amxx
-- See `/indexer-agent/scripts` for installation and testing scripts from @pkrasam
+- See `/indexer-install/non-swarm` for a vanilla docker-compose from @amxx
+- See `/indexer-install/scripts` for installation and testing scripts from @pkrasam
 
 ### Phase 2 - Honest Profit Maximization
 
