@@ -1,19 +1,16 @@
-<h1>Phase 1 - Staking, Basic Actions & Customization</h1>
+<h1>Phase 1 Mission 1 - Setting up the Indexer Stack</h1>
 
-Congrats on making it to Phase 1! Now its time to add some query handling & monetization tooling with two new additions- the indexer agent and indexer service.
+Hello Indexers, congrats on making it to Phase 1! Now its time to add some query handling & monetization tooling with two new additions- the indexer agent and indexer service.
 
-During Phase 0 it seemed we would need a lot more power than we actually do. Rather than continue to overpay for one large under-utilized server, I decided to downsize significantly, while using Docker Swarm to scale up as needed. I compared performance before/after if you're interested in [seeing the results](../performance). Just be mindful that the phase0 test harness is not good at approximating actual usage, since queries are repeated, thus responses are cached.
+During Phase 0 it seemed like the hardware requirements were over-stated. Rather than continue to overpay for one large under-utilized server, I decided to downsize significantly ($20/mo compared to $160/mo), and set up Docker Swarm so I'm ready to scale up as needed. I compared performance before/after this transition, if you're interested in [seeing the results](../performance). Just be mindful that the phase 0 test harness is not good at approximating actual usage, since queries are duplicated, and thus the responses are cached.
 
-Lets migrate our infra to Docker Swarm!
+🛸🛸🛸🛸 Lets migrate our infra to Docker Swarm! 🛸🛸🛸🛸
 
 > Salty about having to learn something new? See [non-swarm](./non-swarm) for the vanilla docker-compose provided by @amxx (thanks!). I haven't tested it myself, so you're on your own with that one.
 
-## Definitions
-
-- **Indexer Agent**: A small component that comes with a small database with maybe 200 rows. It doesn't require a lot of CPU, therefore it can be run on the same machine as the graph-nodes.
-- **Indexer Service**: TODO
-
 # Set up Swarm + Traefik
+
+![](./screenshots/traefik.png)
 
 If you're like me, and never used Swarm before, then start with this tutorial https://dockerswarm.rocks/ which was adapted here for convenience. If you'd rather dive in, you can try following theses commands.
 
@@ -95,6 +92,8 @@ Log in to traefik.mysite.com to see the dashboard
 
 I highly recommend following these instructions to set up a Swarmpit dashboard https://dockerswarm.rocks/swarmpit/
 
+![](./screenshots/swarmpit.png)
+
 # Deploy the Indexer Stack
 
 First pull down the repo
@@ -106,7 +105,7 @@ cd indexer-docker-compose/indexer-install
 
 To allow Traefik to "see" our docker containers, we need to update our docker-compose file with the labels. Docker labels don’t do anything by themselves, but Traefik reads these so it knows how to treat containers. Note that this need to be service-level labels rather than container-level (i.e. under the deploy tag).
 
-I've already done the heavy lifting and created `graph.yml` in this folder.
+💪 I've already done the heavy lifting for you and created `graph.yml` in this folder.
 
 ```yml
 networks:
@@ -136,7 +135,7 @@ deploy:
     - traefik.http.services.graph-query.loadbalancer.server.port=8000
 ```
 
-If you're continuing from the phase 0 tutorial, you will need to update the location of the postgres volume in `graph.yml`.
+If you're continuing from the [phase 0 tutorial](https://github.com/pi0neerpat/indexer-docker-compose#phase-0---deploy-graph-node), you will need to update the location of the postgres volume in `graph.yml`.
 
 ```yml
 postgres:
@@ -207,11 +206,72 @@ psql -U graph-node
 CREATE DATABASE indexer;
 ```
 
+Now indexer service and agent should be running. If you don't have Rinkeby ETH and GRT in your wallet, then the agent may fail to start.
+
+# Completing Mission 1
+
+To wrap up the Phase 1 Mission 1 challenge, we need to provide the output from our indexer-service status, as described [here](https://github.com/graphprotocol/mission-control-indexer#successful-completion).
+
+On your local machine, set npm to use The Graph's private package registry Verdaccio (another awesome [self-hosted tool](https://verdaccio.org/)). I recommend against yarn, as it can be troublesome to set up with Verdaccio.
+
+```bash
+# On your local machine
+npm set registry https://testnet.thegraph.com/npm-registry
+npm login
+# Use the credentials provided in the email from Eva
+```
+
+Install the CLI tools, then reset your registry back to normal.
+
+```bash
+# Install the latest
+npm install -g \
+  @graphprotocol/graph-cli \
+  @graphprotocol/indexer-cli
+
+npm set registry https://registry.npmjs.com/
+```
+
+Now, on your server, uncomment the network and traefik tags for the indexer-agent and deploy the stack. This will temporarily expose our indexer-agent to the world, which you should not normally do. Instead you should use ssh tunneling, since the agent is like the admin portal for your indexer. I plan to find a better solution for accessing it, I just haven't figured out a good method yet.
+
+```yml
+# Swarm
+networks:
+  - default
+  - traefik-public
+deploy:
+  # NOTE: Debug use only! Agent should not be exposed publicly. Instead use the CLI via ssh tunnel
+  labels:
+    - traefik.enable=true
+    - traefik.docker.network=traefik-public
+    - traefik.constraint-label=traefik-public
+    - traefik.http.routers.indexer-agent-http.service=indexer-agent
+    - traefik.http.routers.indexer-agent-https.service=indexer-agent
+    #...
+```
+
+Connect the indexer CLI on your local machine to the indexer-agent. Then check the status.
+
+```bash
+graph indexer connect http://agent.mysite.com
+graph indexer status
+```
+
+![](./screenshots/status.png)
+
+DON'T FORGET to remove the traefik tags on the index-agent and redeploy the stack. We don't want to start a bad habit.
+
 # Whats next?
 
-Awesome work! Hopefully you learned some good stuff today. Head back to the main page to learn how to interact with the Agent, and other steps in Phase1.
+👏👏👏 Awesome work! Hopefully you learned some good stuff today. Head back to the [indexer-docker-compose repo](https://github.com/pi0neerpat/indexer-docker-compose) to start Phase 1 Mission 2 on interacting with the Agent.
 
-# Additional Resources
+#### Additional Resources
 
-- [non-swarm](./non-swarm) docker-compose provided by @amxx
-- [Convenience scripts](./scripts) provided by @pkrasam
+- See an issue or have a comment? Feel free to leave an issue [here](https://github.com/pi0neerpat/indexer-docker-compose/issues).
+- [Non-swarm](./non-swarm) docker-compose provided by @amxx
+- [Convenience scripts](./scripts) for the entire set up provided by @pkrasam
+
+#### Definitions
+
+- **Indexer Agent**: A small component that comes with a small database with maybe 200 rows. It doesn't require a lot of CPU, therefore it can be run on the same machine as the graph-nodes.
+- **Indexer Service**: TODO

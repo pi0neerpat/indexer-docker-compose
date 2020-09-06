@@ -196,7 +196,26 @@ services:
     # Swarm
     networks:
       - default
-    # NOTE: Agent should not be exposed publicly. Instead use the CLI via ssh tunnel
+    #   - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    #   # NOTE: Debug use only! Agent should not be exposed publicly. Instead use the CLI via ssh tunnel
+    #   labels:
+    #     - traefik.enable=true
+    #     - traefik.docker.network=traefik-public
+    #     - traefik.constraint-label=traefik-public
+    #     - "traefik.http.routers.indexer-agent-http.rule=Host(`${PRIVATE_INDEXER_AGENT_DOMAIN}`)"
+    #     - traefik.http.routers.indexer-agent-http.entrypoints=http
+    #     - traefik.http.routers.indexer-agent-http.middlewares=https-redirect
+    #     - "traefik.http.routers.indexer-agent-https.rule=Host(`${PRIVATE_INDEXER_AGENT_DOMAIN}`)"
+    #     - traefik.http.routers.indexer-agent-https.entrypoints=https
+    #     - traefik.http.routers.indexer-agent-https.tls=true
+    #     - traefik.http.routers.indexer-agent-https.tls.certresolver=le
+    #     - traefik.http.services.indexer-agent.loadbalancer.server.port=18000
 
   indexer-service:
     image: graphprotocol/indexer-service

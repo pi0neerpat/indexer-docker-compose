@@ -15,7 +15,7 @@
 
 ## Usage
 
-If you're new to the self-hosted world, there's a useful guide to setting up a new server in `/provision`, although you probably want some more practice with hosting your own apps before diving into this challenge.
+> ❓ New to the self-hosted world? There's a useful guide to setting up a new server in [/vps-introduction](./vps-introduction). I wouldn't recommend starting with this project without some basic experience hosting your own services.
 
 ### Phase 0 - Deploy Graph Node
 
