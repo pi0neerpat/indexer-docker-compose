@@ -29,7 +29,16 @@ nvm install --lts
 nvm use --lts
 ```
 
-Install docker using [these instructions](https://docs.docker.com/engine/install/ubuntu/)
+Install docker using [these instructions](https://docs.docker.com/engine/install/ubuntu/). Alternatively use the official convenience scripts.
+
+```bash
+# Download Docker
+curl -fsSL get.docker.com -o get-docker.sh
+# Install Docker using the stable channel (instead of the default "edge")
+CHANNEL=stable sh get-docker.sh
+# Remove Docker install script
+rm get-docker.sh
+```
 
 
 If you're migrating from an existing server, don't forget the `-P ` option on `rsync`
