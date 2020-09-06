@@ -4,7 +4,11 @@ Eventually this is where I'll discuss performance enhanecements. For now it is j
 
 ---
 
+> I haven't completed testing yet! Stay tuned
+
 # Methods
+
+Using phase 0 test harness https://github.com/graphprotocol/mission-control-indexer/tree/master/testing/phase0. Note that queries are duplicated, so this does not really approximate actual usage.
 
 ```bash
 npm install -g typescript ts-node
@@ -26,6 +30,7 @@ All tested with:
 | Hardware   | RAM Baseline | RAM Load | System Baseline | System Load | req/min |
 | :--------- | :----------- | :------- | --------------- | ----------- | ------- |
 | 32GB 8vCPU | 1.81GB       | 1.79GB   | 5%              | 47%         | 99      |
+| 8GB 4vCPU  | 1.38GB       | GB       | 6%              | %           |         |
 
 ## Increase connections
 
@@ -40,6 +45,7 @@ indexers.csv queries.csv | tee report.md
 | Hardware   | RAM Baseline | RAM Load | System Baseline | System Load | req/min |
 | :--------- | :----------- | :------- | --------------- | ----------- | ------- |
 | 32GB 8vCPU | 1.81GB       | 1.9GB    | 4%              | 45%         | 190     |
+| 8GB 4vCPU  | 2.15GB       | 2.17GB   | 6%              | 24%         | FAILED  |
 
 - Increasing connections per indexer by 10x only doubled req/min
 
@@ -180,10 +186,9 @@ TODO:
 - Change postgres config to allow more connections
 - Does query node have some setting for connections. Couldn't find it in graph-node docs. Check my other notes
 
-
 # Picking a smaller server
 
 - Total db is 98GB for the phase 0 subgraphs, so likely will need 1TB. Unless I don't keep blocks. Will have to check whether this indeed does degrade performance if the archive node is nearby (!)
-- Choosing the $40/mo DO droplet has 4vCPU, 8GB RAM, 160GB SSD, which seems like enough
-- Similar server on Hetzner Cloud is 12 EUR ($14)
+- Choosing the \$40/mo DO droplet has 4vCPU, 8GB RAM, 160GB SSD, which seems like enough
+- Similar server on Hetzner Cloud is 12 EUR (\$14)
 - For comparable price of 34 EUR, can get a Hetzner Dedicated AX41-NVMe has 64 GB RAM, 6 CPU, 2x512GB SSD.
