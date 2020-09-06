@@ -33,10 +33,12 @@ Complete these in this following order:
 
 Getting started with "Indexing-as-a-service"
 
-1. [Indexer Service](./indexer-agent)
-2. Indexer Agent
-3. Indexer CLI
-4. Monitoring
+#### Mission 1
+
+1. Install the Indexer using Swarm - [indexer-install](./indexer-install)
+2. Use the Indexer-Agent CLI - [agent-usage](./agent-usage)
+
+#### Mission 2
 
 #### Extra Resources:
 
