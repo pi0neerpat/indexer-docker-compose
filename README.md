@@ -6,14 +6,16 @@
 </p>
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 > A guide to set up The Graph infrastructure with Docker Compose / Nginx
 
 ## Usage
 
-See guides for individual phases
+> ❓ New to the self-hosted world? There's a useful guide to setting up a new server in [/vps-introduction](./vps-introduction). I wouldn't recommend starting with this project without some basic experience hosting your own services.
 
 ### Phase 0 - Deploy Graph Node
 
@@ -23,18 +25,27 @@ Complete these in this following order:
 2. [Graph Node docker-compose - ADVANCED](./graph-node/advanced)
 3. [Monitoring Infra](./monitoring)
 
-If you'd rather skip learning, you can run all the infrastructure in one command using the [insane method](./graph-node/insane). _I do not recommend doing this_.
+#### Extra Resources:
+
+- See `/graph-node/insane` for a full phase 0 docker-compose from @amxx
 
 ### Phase 1 - Staking, Basic Actions & Customization
 
 Getting started with "Indexing-as-a-service"
 
+#### Mission 1
+
+1. Install the Indexer using Swarm - [indexer-install](./indexer-install)
+2. (Soon) Using the Indexer-Agent CLI - [indexer-agent](./indexer-agent)
+
+#### Mission 2
+
 _TODO_
 
-1. [Indexer Service](./indexer-agent)
-2. Indexer Agent
-3. Indexer CLI
-4. Monitoring
+#### Extra Resources:
+
+- See `/indexer-install/non-swarm` for a vanilla docker-compose from @amxx
+- See `/indexer-install/scripts` for installation and testing scripts from @pkrasam
 
 ### Phase 2 - Honest Profit Maximization
 
@@ -52,7 +63,7 @@ _TODO_
 
 👤 **Patrick Gallagher**
 
-- Website: oneclickdapp.com
+- Website: https://patrickgallagher.dev
 - Twitter: [@pi0neerpat](https://twitter.com/pi0neerpat)
 - Github: [@pi0neerpat](https://github.com/pi0neerpat)
 
@@ -83,6 +94,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

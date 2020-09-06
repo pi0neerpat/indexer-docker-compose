@@ -1,0 +1,373 @@
+version: "3"
+services:
+  ############################################################################
+  #                           POSTGRES - Database                            #
+  ############################################################################
+
+  postgres:
+    image: postgres
+    user: "1000:1000"
+    restart: always
+    command:
+      - "postgres"
+      - "-cshared_preload_libraries=pg_stat_statements"
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - /data/postgres:/var/lib/postgresql/data
+    # Swarm
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == manager]
+      labels:
+        - traefik.enable=false
+    networks:
+      - default
+
+  ############################################################################
+  #                    GRAPHNODES - indexering and query                     #
+  ############################################################################
+
+  graphnode-query-1:
+    image: graphprotocol/graph-node:latest
+    restart: always
+    depends_on:
+      - postgres
+    # ports:
+    #  - '8020:8020'
+    #  - "8000:8000" # http
+    #  - "8030:8030" # index-node
+    #  - "8001:8001" # ws
+    #  - "8040:8040" # metrics
+    environment:
+      postgres_host: "postgres:5432"
+      postgres_db: "${DB_NAME_GRAPH_NODE}"
+      postgres_user: "${DB_USER}"
+      postgres_pass: "${DB_PASSWORD}"
+      ipfs: "${IPFS_ENDPOINT}"
+      ethereum: "mainnet:${ETH_ENDPOINT_GRAPH_NODE_MAINNET}"
+      GRAPH_NODE_ID: "missioncontrol_query_1"
+      # node_role: "query-node"
+      DISABLE_BLOCK_INGESTOR: "true"
+      GRAPH_KILL_IF_UNRESPONSIVE: "true"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    # Swarm
+    networks:
+      - default
+      - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+      # NOTE: disable treafik network and labels once the indexer-service is working
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        # graph-query service
+        - traefik.http.routers.graph-query-http.service=graph-query
+        - traefik.http.routers.graph-query-https.service=graph-query
+        - "traefik.http.routers.graph-query-http.rule=Host(`${GRAPH_QUERY_SERVER_DOMAIN}`)"
+        - traefik.http.routers.graph-query-http.entrypoints=http
+        - traefik.http.routers.graph-query-http.middlewares=https-redirect
+        - "traefik.http.routers.graph-query-https.rule=Host(`${GRAPH_QUERY_SERVER_DOMAIN}`)"
+        - traefik.http.routers.graph-query-https.entrypoints=https
+        - traefik.http.routers.graph-query-https.tls=true
+        - traefik.http.routers.graph-query-https.tls.certresolver=le
+        - traefik.http.services.graph-query.loadbalancer.server.port=8000
+        # graph-health service
+        - traefik.http.routers.graph-health-http.service=graph-health
+        - traefik.http.routers.graph-health-https.service=graph-health
+        - "traefik.http.routers.graph-health-http.rule=Host(`${GRAPH_QUERY_SERVER_DOMAIN}`) && PathPrefix(`/index-node`)"
+        - traefik.http.routers.graph-health-http.entrypoints=http
+        - traefik.http.routers.graph-health-http.middlewares=https-redirect
+        - traefik.http.middlewares.stripprefix.stripprefix.prefixes=/index-node,/indexer
+        - traefik.http.routers.graph-health-https.middlewares=stripprefix
+        - "traefik.http.routers.graph-health-https.rule=Host(`${GRAPH_QUERY_SERVER_DOMAIN}`) && PathPrefix(`/index-node`)"
+        - traefik.http.routers.graph-health-https.entrypoints=https
+        - traefik.http.routers.graph-health-https.tls=true
+        - traefik.http.routers.graph-health-https.tls.certresolver=le
+        - traefik.http.services.graph-health.loadbalancer.server.port=8030
+
+  graphnode-indexer-1:
+    image: graphprotocol/graph-node:latest
+    restart: always
+    # ports:
+    #   - "8100:8000" # http
+    # - "8020:8020" # json-rpc
+    #   - "8140:8040" # metrics
+    depends_on:
+      - postgres
+    environment:
+      postgres_host: "postgres:5432"
+      postgres_db: "${DB_NAME_GRAPH_NODE}"
+      postgres_user: "${DB_USER}"
+      postgres_pass: "${DB_PASSWORD}"
+      ipfs: "${IPFS_ENDPOINT}"
+      # mainnet:http://rpcdaemon:8545
+      ethereum: "mainnet:${ETH_ENDPOINT_GRAPH_NODE_MAINNET}"
+      GRAPH_NODE_ID: "missioncontrol_indexer_1"
+      # BLOCK_INGESTOR: "missioncontrol_indexer_1"
+      GRAPH_KILL_IF_UNRESPONSIVE: "true"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    # Swarm
+    networks:
+      - default
+      # - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      # NOTE: Use for debugging, not in production. Enable "traefik-public" network above to use.
+      # labels:
+      #   - traefik.enable=true
+      #   - traefik.docker.network=traefik-public
+      #   - traefik.constraint-label=traefik-public
+      #   - traefik.http.routers.graph-query-http.entrypoints=http
+      #   - traefik.http.routers.graph-indexer-http.middlewares=stripprefix
+      #   - "traefik.http.routers.graph-indexer-http.rule=Host(`${GRAPH_QUERY_SERVER_DOMAIN}`) && PathPrefix(`/indexer`)"
+      #   - traefik.http.services.graph-indexer.loadbalancer.server.port=8020
+
+  ############################################################################
+  #                    INDEXER - mission-control network                     #
+  ############################################################################
+
+  indexer-agent:
+    image: graphprotocol/indexer-agent
+    depends_on:
+      - graphnode-query-1
+    #ports:
+    #  - 18000:18000
+    environment:
+      INDEXER_AGENT_INDEXER_MANAGEMENT_PORT: 18000
+      INDEXER_AGENT_MNEMONIC: "${MNEMONIC}"
+      INDEXER_AGENT_ETHEREUM: "${ETH_ENDPOINT_INDEXER}"
+      # Node IDs of Graph nodes to use for indexing
+      INDEXER_AGENT_INDEX_NODE_IDS: "missioncontrol_indexer_1"
+      # Indexer endpoint for receiving requests from the network (public, external)
+      INDEXER_AGENT_PUBLIC_INDEXER_URL: "${PUBLIC_INDEXER_SERVER_DOMAIN}"
+      # Coordinates describing the Indexer's location
+      GEO_COORDINATES: ${GEO_COORDINATES}
+      # Graph Node endpoint for applying and updating subgraph deployments (internal)
+      INDEXER_AGENT_GRAPH_NODE_ADMIN_ENDPOINT: "http://graphnode-query-1:8020/"
+      # Graph Node endpoint for indexing statuses etc. (internal)
+      INDEXER_AGENT_GRAPH_NODE_STATUS_ENDPOINT: "http://graphnode-query-1:8030/graphql"
+      # Graph Node endpoint for querying subgraphs (internal)
+      INDEXER_AGENT_GRAPH_NODE_QUERY_ENDPOINT: "http://graphnode-query-1:8000/"
+      # Endpoint to query the network subgraph from (external, always?)
+      INDEXER_AGENT_NETWORK_SUBGRAPH_ENDPOINT: "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-rinkeby"
+      # Network subgraph deployment (Unused)
+      # INDEXER_AGENT_NETWORK_SUBGRAPH_NETWORK: ""
+      # Default amount of GRT to allocate to a subgraph deployment (Unused)
+      # INDEXER_AGENT_ALLOCATION_AMOUNT: "0.01"
+      INDEXER_AGENT_POSTGRES_HOST: "postgres"
+      INDEXER_AGENT_POSTGRES_PORT: 5432
+      INDEXER_AGENT_POSTGRES_DATABASE: "${DB_NAME_INDEXER}"
+      INDEXER_AGENT_POSTGRES_USERNAME: "${DB_USER}"
+      INDEXER_AGENT_POSTGRES_PASSWORD: "${DB_PASSWORD}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    # Swarm
+    networks:
+      - default
+    #   - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    #   # NOTE: Debug use only! Agent should not be exposed publicly. Instead use the CLI via ssh tunnel
+    #   labels:
+    #     - traefik.enable=true
+    #     - traefik.docker.network=traefik-public
+    #     - traefik.constraint-label=traefik-public
+    #     - "traefik.http.routers.indexer-agent-http.rule=Host(`${PRIVATE_INDEXER_AGENT_DOMAIN}`)"
+    #     - traefik.http.routers.indexer-agent-http.entrypoints=http
+    #     - traefik.http.routers.indexer-agent-http.middlewares=https-redirect
+    #     - "traefik.http.routers.indexer-agent-https.rule=Host(`${PRIVATE_INDEXER_AGENT_DOMAIN}`)"
+    #     - traefik.http.routers.indexer-agent-https.entrypoints=https
+    #     - traefik.http.routers.indexer-agent-https.tls=true
+    #     - traefik.http.routers.indexer-agent-https.tls.certresolver=le
+    #     - traefik.http.services.indexer-agent.loadbalancer.server.port=18000
+
+  indexer-service:
+    image: graphprotocol/indexer-service
+    depends_on:
+      - graphnode-query-1
+    #ports:
+    #  - 7600:7600
+    environment:
+      INDEXER_SERVICE_PORT: 7600
+      INDEXER_SERVICE_MNEMONIC: "${MNEMONIC}"
+      INDEXER_SERVICE_ETHEREUM: "${ETH_ENDPOINT_INDEXER}"
+      # Graph Node endpoint to forward queries to (internal)
+      INDEXER_SERVICE_GRAPH_NODE_QUERY_ENDPOINT: "http://graphnode-query-1:8000/"
+      # Graph Node endpoint for indexing statuses etc. (internal)
+      INDEXER_SERVICE_GRAPH_NODE_STATUS_ENDPOINT: "http://graphnode-query-1:8030/graphql"
+      # Endpoint to query the network subgraph from (external, always?)
+      INDEXER_SERVICE_NETWORK_SUBGRAPH_ENDPOINT: "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-rinkeby"
+      # Network subgraph deployment (Unused)
+      # INDEXER_AGENT_NETWORK_SUBGRAPH_NETWORK: ""
+      SERVER_HOST: "postgres"
+      SERVER_PORT: 5432
+      SERVER_DB_NAME: "indexer"
+      SERVER_DB_USER: "${DB_USER}"
+      SERVER_DB_PASSWORD: "${DB_PASSWORD}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    # Swarm
+    networks:
+      - default
+      - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.indexer-service-http.service=indexer-service
+        - traefik.http.routers.indexer-service-https.service=indexer-service
+        - "traefik.http.routers.indexer-service-http.rule=Host(`${PUBLIC_INDEXER_SERVER_DOMAIN}`)"
+        - traefik.http.routers.indexer-service-http.entrypoints=http
+        - traefik.http.routers.indexer-service-http.middlewares=https-redirect
+        - "traefik.http.routers.indexer-service-https.rule=Host(`${PUBLIC_INDEXER_SERVER_DOMAIN}`)"
+        - traefik.http.routers.indexer-service-https.entrypoints=https
+        - traefik.http.routers.indexer-service-https.tls=true
+        - traefik.http.routers.indexer-service-https.tls.certresolver=le
+        - traefik.http.services.indexer-service.loadbalancer.server.port=7600
+    # NOTE: todo enable websockets
+
+  ############################################################################
+  #                                MONITORING                                #
+  ############################################################################
+
+  prometheus:
+    image: prom/prometheus
+    user: "1000:1000"
+    restart: always
+    depends_on:
+      - graphnode-indexer-1
+    command:
+      - "--log.level=warn"
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    # ports:
+    #   - 9090:9090
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - /data/prometheus:/prometheus
+    # Swarm
+    networks:
+      - default
+      - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 2048M
+        reservations:
+          memory: 128M
+      # Traefik
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - "traefik.http.routers.graph-prometheus-http.rule=Host(`${PROMETHEUS_SERVER_DOMAIN}`)"
+        - traefik.http.routers.graph-prometheus-http.entrypoints=http
+        - traefik.http.routers.graph-prometheus-http.middlewares=https-redirect
+        - "traefik.http.routers.graph-prometheus-https.rule=Host(`${PROMETHEUS_SERVER_DOMAIN}`)"
+        - traefik.http.routers.graph-prometheus-https.entrypoints=https
+        - traefik.http.routers.graph-prometheus-https.tls=true
+        - traefik.http.routers.graph-prometheus-https.tls.certresolver=le
+        - traefik.http.services.graph-prometheus.loadbalancer.server.port=9090
+        # - traefik.http.middlewares.graph-prometheus-auth.basicauth.users=${PROMETHEUS_ADMIN_USER?Variable not set}:${PROMETHEUS_HASHED_PASSWORD?Variable not set}
+        # - traefik.http.routers.graph-prometheus-https.middlewares=swarmprom-unsee-auth
+
+  grafana:
+    image: grafana/grafana
+    user: "1000:1000"
+    restart: always
+    depends_on:
+      - postgres
+      - prometheus
+    #ports:
+    #  - 3000:3000
+    environment:
+      postgres_host: "postgres:5432"
+      postgres_db: "${DB_NAME_GRAPH_NODE}"
+      postgres_user: "${DB_USER}"
+      postgres_pass: "${DB_PASSWORD}"
+      GF_SERVER_DOMAIN: "${GF_SERVER_DOMAIN}"
+      GF_SERVER_ROOT_URL: "${GF_SERVER_ROOT_URL}"
+    volumes:
+      - ./grafana:/etc/grafana/
+      - /data/grafana:/var/lib/grafana
+    # Swarm
+    networks:
+      - default
+      - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - "traefik.http.routers.graph-grafana-http.rule=Host(`${GF_SERVER_DOMAIN}`)"
+        - traefik.http.routers.graph-grafana-http.entrypoints=http
+        - traefik.http.routers.graph-grafana-http.middlewares=https-redirect
+        - "traefik.http.routers.graph-grafana-https.rule=Host(`${GF_SERVER_DOMAIN}`)"
+        - traefik.http.routers.graph-grafana-https.entrypoints=https
+        - traefik.http.routers.graph-grafana-https.tls=true
+        - traefik.http.routers.graph-grafana-https.tls.certresolver=le
+        - traefik.http.services.graph-grafana.loadbalancer.server.port=3000
+
+networks:
+  traefik-public:
+    external: true

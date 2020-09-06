@@ -1,0 +1,221 @@
+version: '3'
+services:
+
+  ############################################################################
+  #                        TURBO-GETH - Archive Node                         #
+  ############################################################################
+
+  # turbo-geth:
+  #   image: turbo-geth:latest
+  #   build: ../turbo-geth
+  #   restart: always
+  #   command:
+  #     - 'tg'
+  #     - '--nousb'
+  #     - '--metrics'
+  #     - '--pprof.addr=0.0.0.0'
+  #     - '--pprof.port=6060'
+  #     - '--private.api.addr=0.0.0.0:9090'
+  #     - '--ipcdisable'
+  #   #ports:
+  #   #  - 30303:30303
+  #   volumes:
+  #     - /data/turbogeth:/root/.local/share/turbogeth
+  #
+  # rpcdaemon:
+  #   image: turbo-geth:latest
+  #   restart: always
+  #   depends_on:
+  #     - turbo-geth
+  #   command:
+  #     - 'rpcdaemon'
+  #     - '--private.api.addr=turbo-geth:9090'
+  #     - '--http.addr=0.0.0.0'
+  #     - '--http.vhosts=*'
+  #     - '--http.corsdomain=*'
+  #     - '--http.api=eth,debug,net'
+  #   ports:
+  #     - 8545:8545
+
+  ############################################################################
+  #                           POSTGRES - Database                            #
+  ############################################################################
+
+  postgres:
+    image: postgres
+    user: '1000:1000'
+    restart: always
+    command:
+      - 'postgres'
+      - '-cshared_preload_libraries=pg_stat_statements'
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: '${DB_USER}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD}'
+    volumes:
+      - /data/postgres:/var/lib/postgresql/data
+
+  ############################################################################
+  #                    GRAPHNODES - indexering and query                     #
+  ############################################################################
+
+  graphnode-query-1:
+    image: graphprotocol/graph-node:latest
+    restart: always
+    depends_on:
+      - postgres
+    #ports:
+    #  - '8000:8000'
+    #  - '8001:8001'
+    #  - '8020:8020'
+    #  - '8030:8030'
+    #  - '8040:8040'
+    environment:
+      postgres_host: 'postgres:5432'
+      postgres_db: 'graphnode'
+      postgres_user: '${DB_USER}'
+      postgres_pass: '${DB_PASSWORD}'
+      ipfs: 'https://testnet.thegraph.com/ipfs/'
+      ethereum: 'mainnet:https://eth-mainnet.alchemyapi.io/jsonrpc/${ALCHEMY_API}'
+      GRAPH_NODE_ID: 'missioncontrol_query_1'
+      DISABLE_BLOCK_INGESTOR: 'true'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '200k'
+        max-file: '10'
+
+  graphnode-indexer-1:
+    image: graphprotocol/graph-node:latest
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      postgres_host: 'postgres:5432'
+      postgres_db: 'graphnode'
+      postgres_user: '${DB_USER}'
+      postgres_pass: '${DB_PASSWORD}'
+      ipfs: 'https://testnet.thegraph.com/ipfs/'
+      # mainnet:http://rpcdaemon:8545
+      ethereum: '
+        mainnet:https://eth-mainnet.alchemyapi.io/jsonrpc/${ALCHEMY_API}
+        ropsten:https://eth-ropsten.alchemyapi.io/jsonrpc/${ALCHEMY_API}
+        rinkeby:https://eth-rinkeby.alchemyapi.io/jsonrpc/${ALCHEMY_API}
+        goerli:https://eth-goerli.alchemyapi.io/jsonrpc/${ALCHEMY_API}
+        kovan:https://eth-kovan.alchemyapi.io/jsonrpc/${ALCHEMY_API}
+      '
+      GRAPH_NODE_ID: 'missioncontrol_indexer_1'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '200k'
+        max-file: '10'
+
+  ############################################################################
+  #                    INDEXER - mission-control network                     #
+  ############################################################################
+
+  indexer-agent:
+    image: graphprotocol/indexer-agent
+    depends_on:
+      - graphnode-query-1
+    #ports:
+    #  - 18000:18000
+    environment:
+      INDEXER_AGENT_INDEXER_MANAGEMENT_PORT: 18000
+      INDEXER_AGENT_MNEMONIC: '${MNEMONIC}'
+      INDEXER_AGENT_INDEX_NODE_IDS: 'missioncontrol_indexer_1'
+      INDEXER_AGENT_PUBLIC_INDEXER_URL: 'http://mission-control.thegraph.iex.ec/'
+      INDEXER_AGENT_INDEXER_GEO_COORDINATES: '"37.630768,-119.032631"'
+      INDEXER_AGENT_ETHEREUM: 'https://eth-rinkeby.alchemyapi.io/jsonrpc/${ALCHEMY_API}'
+      INDEXER_AGENT_GRAPH_NODE_QUERY_ENDPOINT: 'http://graphnode-query-1:8000/'
+      INDEXER_AGENT_GRAPH_NODE_ADMIN_ENDPOINT: 'http://graphnode-query-1:8020/'
+      INDEXER_AGENT_GRAPH_NODE_STATUS_ENDPOINT: 'http://graphnode-query-1:8030/graphql'
+      INDEXER_AGENT_NETWORK_SUBGRAPH_ENDPOINT: 'https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-rinkeby'
+      INDEXER_AGENT_POSTGRES_HOST: 'postgres'
+      INDEXER_AGENT_POSTGRES_PORT: 5432
+      INDEXER_AGENT_POSTGRES_DATABASE: 'indexer'
+      INDEXER_AGENT_POSTGRES_USERNAME: '${DB_USER}'
+      INDEXER_AGENT_POSTGRES_PASSWORD: '${DB_PASSWORD}'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '200k'
+        max-file: '10'
+
+  indexer-service:
+    image: graphprotocol/indexer-service
+    depends_on:
+      - graphnode-query-1
+    #ports:
+    #  - 7600:7600
+    environment:
+      INDEXER_SERVICE_PORT: 7600
+      INDEXER_SERVICE_MNEMONIC: '${MNEMONIC}'
+      INDEXER_SERVICE_ETHEREUM: 'https://eth-rinkeby.alchemyapi.io/jsonrpc/${ALCHEMY_API}'
+      INDEXER_SERVICE_GRAPH_NODE_QUERY_ENDPOINT: 'http://graphnode-query-1:8000/'
+      INDEXER_SERVICE_GRAPH_NODE_STATUS_ENDPOINT: 'http://graphnode-query-1:8030/graphql'
+      INDEXER_SERVICE_NETWORK_SUBGRAPH_ENDPOINT: 'https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-rinkeby'
+      SERVER_HOST: 'postgres'
+      SERVER_PORT: 5432
+      SERVER_DB_NAME: 'indexer'
+      SERVER_DB_USER: '${DB_USER}'
+      SERVER_DB_PASSWORD: '${DB_PASSWORD}'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '200k'
+        max-file: '10'
+
+  ############################################################################
+  #                                MONITORING                                #
+  ############################################################################
+
+  prometheus:
+    image: prom/prometheus
+    user: '1000:1000'
+    restart: always
+    depends_on:
+      - graphnode-indexer-1
+    command:
+      - '--log.level=warn'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    #ports:
+    #  - 9090:9090
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - /data/prometheus:/prometheus
+
+  grafana:
+    image: grafana/grafana
+    user: '1000:1000'
+    restart: always
+    depends_on:
+      - postgres
+      - prometheus
+    #ports:
+    #  - 3000:3000
+    environment:
+      postgres_host: 'postgres:5432'
+      postgres_db: 'graphnode'
+      postgres_user: '${DB_USER}'
+      postgres_pass: '${DB_PASSWORD}'
+    volumes:
+      - ./grafana:/etc/grafana/
+      - /data/grafana:/var/lib/grafana
+
+  ############################################################################
+  #                              REVERSE PROXY                               #
+  ############################################################################
+
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx:/etc/nginx:ro
+      - /etc/letsencrypt:/etc/letsencrypt
