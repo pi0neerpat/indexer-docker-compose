@@ -53,7 +53,7 @@ services:
       ipfs: "${IPFS_ENDPOINT}"
       ethereum: "mainnet:${ETH_ENDPOINT_GRAPH_NODE_MAINNET}"
       GRAPH_NODE_ID: "missioncontrol_query_1"
-      # node_role: "query-node"
+      node_role: "query-node"
       DISABLE_BLOCK_INGESTOR: "true"
       GRAPH_KILL_IF_UNRESPONSIVE: "true"
     logging:
@@ -109,9 +109,9 @@ services:
   graphnode-indexer-1:
     image: graphprotocol/graph-node:latest
     restart: always
-    # ports:
-    #   - "8100:8000" # http
-    # - "8020:8020" # json-rpc
+    ports:
+      #   - "8100:8000" # http
+      - "8020:8020" # json-rpc
     #   - "8140:8040" # metrics
     depends_on:
       - postgres
@@ -124,7 +124,6 @@ services:
       # mainnet:http://rpcdaemon:8545
       ethereum: "mainnet:${ETH_ENDPOINT_GRAPH_NODE_MAINNET}"
       GRAPH_NODE_ID: "missioncontrol_indexer_1"
-      # BLOCK_INGESTOR: "missioncontrol_indexer_1"
       GRAPH_KILL_IF_UNRESPONSIVE: "true"
     logging:
       driver: "json-file"
@@ -159,8 +158,8 @@ services:
     image: graphprotocol/indexer-agent
     depends_on:
       - graphnode-query-1
-    #ports:
-    #  - 18000:18000
+    ports:
+      - 18000:18000
     environment:
       INDEXER_AGENT_INDEXER_MANAGEMENT_PORT: 18000
       INDEXER_AGENT_MNEMONIC: "${MNEMONIC}"
@@ -168,7 +167,7 @@ services:
       # Node IDs of Graph nodes to use for indexing
       INDEXER_AGENT_INDEX_NODE_IDS: "missioncontrol_indexer_1"
       # Indexer endpoint for receiving requests from the network (public, external)
-      INDEXER_AGENT_PUBLIC_INDEXER_URL: "${PUBLIC_INDEXER_SERVER_DOMAIN}"
+      INDEXER_AGENT_PUBLIC_INDEXER_URL: "http://${PUBLIC_INDEXER_SERVER_DOMAIN}"
       # Coordinates describing the Indexer's location
       GEO_COORDINATES: ${GEO_COORDINATES}
       # Graph Node endpoint for applying and updating subgraph deployments (internal)
@@ -182,7 +181,7 @@ services:
       # Network subgraph deployment (Unused)
       # INDEXER_AGENT_NETWORK_SUBGRAPH_NETWORK: ""
       # Default amount of GRT to allocate to a subgraph deployment (Unused)
-      # INDEXER_AGENT_ALLOCATION_AMOUNT: "0.01"
+      # INDEXER_AGENT_ALLOCATION_AMOUNT: "0"
       INDEXER_AGENT_POSTGRES_HOST: "postgres"
       INDEXER_AGENT_POSTGRES_PORT: 5432
       INDEXER_AGENT_POSTGRES_DATABASE: "${DB_NAME_INDEXER}"
@@ -196,26 +195,26 @@ services:
     # Swarm
     networks:
       - default
-    #   - traefik-public
+      # - traefik-public
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints:
           - node.role == manager
-    #   # NOTE: Debug use only! Agent should not be exposed publicly. Instead use the CLI via ssh tunnel
-    #   labels:
-    #     - traefik.enable=true
-    #     - traefik.docker.network=traefik-public
-    #     - traefik.constraint-label=traefik-public
-    #     - "traefik.http.routers.indexer-agent-http.rule=Host(`${PRIVATE_INDEXER_AGENT_DOMAIN}`)"
-    #     - traefik.http.routers.indexer-agent-http.entrypoints=http
-    #     - traefik.http.routers.indexer-agent-http.middlewares=https-redirect
-    #     - "traefik.http.routers.indexer-agent-https.rule=Host(`${PRIVATE_INDEXER_AGENT_DOMAIN}`)"
-    #     - traefik.http.routers.indexer-agent-https.entrypoints=https
-    #     - traefik.http.routers.indexer-agent-https.tls=true
-    #     - traefik.http.routers.indexer-agent-https.tls.certresolver=le
-    #     - traefik.http.services.indexer-agent.loadbalancer.server.port=18000
+      # NOTE: Debug use only! Agent should not be exposed publicly. Instead use the CLI via ssh tunnel
+      # labels:
+      #   - traefik.enable=true
+      #   - traefik.docker.network=traefik-public
+      #   - traefik.constraint-label=traefik-public
+      #   - "traefik.http.routers.indexer-agent-http.rule=Host(`${PRIVATE_INDEXER_AGENT_DOMAIN}`)"
+      #   - traefik.http.routers.indexer-agent-http.entrypoints=http
+      #   - traefik.http.routers.indexer-agent-http.middlewares=https-redirect
+      #   - "traefik.http.routers.indexer-agent-https.rule=Host(`${PRIVATE_INDEXER_AGENT_DOMAIN}`)"
+      #   - traefik.http.routers.indexer-agent-https.entrypoints=https
+      #   - traefik.http.routers.indexer-agent-https.tls=true
+      #   - traefik.http.routers.indexer-agent-https.tls.certresolver=le
+      #   - traefik.http.services.indexer-agent.loadbalancer.server.port=18000
 
   indexer-service:
     image: graphprotocol/indexer-service
