@@ -1,5 +1,7 @@
 <h1>Phase 1 Mission 1 - Setting up the Indexer Stack</h1>
 
+This tutorial is also available via my blog: https://patrickgallagher.dev/blog/2020/09/06/graph-indexer-phase1
+
 Hello Indexers, congrats on making it to Phase 1! Now its time to add some query handling & monetization tooling with two new additions- the indexer agent and indexer service.
 
 During Phase 0 it seemed like the hardware requirements were over-stated. Rather than continue to overpay for one large under-utilized server, I decided to downsize significantly ($20/mo compared to $160/mo), and set up Docker Swarm so I'm ready to scale up as needed. I compared performance before/after this transition, if you're interested in [seeing the results](../performance). Just be mindful that the phase 0 test harness is not good at approximating actual usage, since queries are duplicated, and thus the responses are cached.
@@ -14,7 +16,7 @@ During Phase 0 it seemed like the hardware requirements were over-stated. Rather
 
 If you're like me, and never used Swarm before, then start with this tutorial https://dockerswarm.rocks/ which was adapted here for convenience. If you'd rather dive in, you can try following theses commands.
 
-Once you're done setting up swarm, jump to the [next section](#deploy-the-indexer-stack).
+Once you're done setting up swarm, jump to the next section.
 
 ```bash
 # Connect as root
@@ -259,7 +261,19 @@ graph indexer status
 
 ![](./screenshots/status.png)
 
-DON'T FORGET to remove the traefik tags on the index-agent and redeploy the stack. We don't want to start a bad habit.
+## Update the indexer rules
+
+This is very important, since the agent will STOP SYNCING your subgraphs unless you stake GRT. I personally would like the ability to turn off this feature using a “always sync” flag. For now though, we need to update our rules table. This will set the minimum stake needed to sync at 50 GRT, and set Moloch and Uniswap to 100 GRT stake (I guess we don’t need to worry about Synthetix for now).
+
+```bash
+graph indexer rules set global minStake 50
+graph indexer rules set QmXKwSEMirgWVn41nRzkT3hpUBw29cp619Gx58XW6mPhZP allocationAmount 100
+graph indexer rules set QmTXzATwNfgGVukV1fX2T6xw9f6LAYRVWpsdXyRWzUR2H9 allocationAmount 100
+
+graph indexer rules get all --merged
+```
+
+Now that we are done, DON’T FORGET to remove the traefik tags on the index-agent and redeploy the stack. We don’t want to start a bad habit.
 
 # Whats next?
 
