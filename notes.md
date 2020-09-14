@@ -19,3 +19,7 @@ Deleting indexer database scripts
 
 - https://gist.github.com/lutter/b74ee0ae20d1ca2614b9a060ff6df2d5
 - https://ptb.discordapp.com/channels/438038660412342282/737341252835737641/753748878146273350
+
+## Adding new Dashboards
+
+https://github.com/graphprotocol/mission-control-indexer/wiki/Grafana-Dashboard-Enhancements

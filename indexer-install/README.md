@@ -101,7 +101,7 @@ I highly recommend following these instructions to set up a Swarmpit dashboard h
 First pull down the repo
 
 ```bash
-git clone git@github.com:pi0neerpat/indexer-docker-compose.git
+git clone https://github.com/pi0neerpat/indexer-docker-compose
 cd indexer-docker-compose/indexer-install
 ```
 
@@ -156,10 +156,11 @@ export NODE_ID=$(docker info -f '{{.Swarm.NodeID}}')
 docker node update --label-add postgres.postgres-data=true $NODE_ID
 ```
 
-Create some necessary directories
+Create some necessary directories. See [docker docs](https://docs.docker.com/engine/install/linux-postinstall/) for more help with managing permissions.
 
 ```bash
 mkdir -p /data/grafana /data/prometheus /data/postgres
+sudo chown "$USER":"$USER" /data/ -R
 ```
 
 Log in to docker using your credentials and pull the private images.
