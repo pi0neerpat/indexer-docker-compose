@@ -13,11 +13,11 @@
 
 > A guide to set up The Graph infrastructure with Docker Compose / Nginx
 
-## Usage
+## Guides
 
-> ❓ New to the self-hosted world? There's a useful guide to setting up a new server in [/vps-introduction](./vps-introduction). I wouldn't recommend starting with this project without some basic experience hosting your own services.
+> ❓ Are you a self-hosted noob? There's a useful guide to setting up a new server in [/vps-introduction](./vps-introduction). I wouldn't recommend starting with this project without some basic experience hosting your own services.
 
-### Phase 0 - Deploy Graph Node
+### 👶 Phase 0 - Deploy Graph Node
 
 Complete these in this following order:
 
@@ -25,11 +25,11 @@ Complete these in this following order:
 2. [Graph Node docker-compose - ADVANCED](./graph-node/advanced)
 3. [Monitoring Infra](./monitoring)
 
-#### Extra Resources:
+_Extra Resources_:
 
 - See `/graph-node/insane` for a full phase 0 docker-compose from @amxx
 
-### Phase 1 - Staking, Basic Actions & Customization
+### ⛏️ Phase 1 - Staking, Basic Actions & Customization
 
 Getting started with "Indexing-as-a-service"
 
@@ -40,25 +40,24 @@ Getting started with "Indexing-as-a-service"
 
 #### Mission 2
 
-_TODO_
+Use the new Dashboard to signal + stake. (Follow instructions provided by TheGraph)
 
-#### Extra Resources:
+_Extra Resources_:
 
 - See `/indexer-install/non-swarm` for a vanilla docker-compose from @amxx
 - See `/indexer-install/scripts` for installation and testing scripts from @pkrasam
 
-### Phase 2 - Honest Profit Maximization
+### 🤑 Phase 2 - Honest Profit Maximization
 
-_TODO_
+There is only 1 mission here. No new components were added.
 
-### Phase 3 - Network Stress Test
+----
 
-_TODO_
+(not yet started) Phase 3 - Network Stress Test
 
-### Phase 4 - Rational Profit Maximization
+(not yet started) Phase 4 - Rational Profit Maximization
 
-_TODO_
-
+---
 ## Author
 
 👤 **Patrick Gallagher**
