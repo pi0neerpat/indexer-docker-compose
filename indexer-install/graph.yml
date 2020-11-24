@@ -155,7 +155,7 @@ services:
   ############################################################################
 
   indexer-agent:
-    image: graphprotocol/indexer-agent
+    image: graphprotocol/indexer-agent:latest
     depends_on:
       - graphnode-query-1
     ports:
@@ -187,6 +187,7 @@ services:
       INDEXER_AGENT_POSTGRES_DATABASE: "${DB_NAME_INDEXER}"
       INDEXER_AGENT_POSTGRES_USERNAME: "${DB_USER}"
       INDEXER_AGENT_POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      INDEXER_AGENT_NETWORK_SUBGRAPH_ENDPOINT: "https://gateway-testnet.thegraph.com/network"
     logging:
       driver: "json-file"
       options:
@@ -217,7 +218,7 @@ services:
       #   - traefik.http.services.indexer-agent.loadbalancer.server.port=18000
 
   indexer-service:
-    image: graphprotocol/indexer-service
+    image: graphprotocol/indexer-service:latest
     depends_on:
       - graphnode-query-1
     #ports:
@@ -239,6 +240,8 @@ services:
       SERVER_DB_NAME: "indexer"
       SERVER_DB_USER: "${DB_USER}"
       SERVER_DB_PASSWORD: "${DB_PASSWORD}"
+      SKIP_EVM_VALIDATION: true
+      INDEXER_SERVICE_NETWORK_SUBGRAPH_ENDPOINT: "https://gateway-testnet.thegraph.com/network"
     logging:
       driver: "json-file"
       options:
