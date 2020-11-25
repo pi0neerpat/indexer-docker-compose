@@ -7,16 +7,12 @@ rule_files:
 alerting:
 
 scrape_configs:
-  - job_name: 'graphnode-metrics'
-    metrics_path: /metrics
+  - job_name: "graphnode-metrics"
     static_configs:
-      - targets: ['graphnode-indexer-1:8040', 'graphnode-query-1:8040']
-  - job_name: 'indexer-service-metrics'
-    metrics_path: /metrics
+      - targets: ["graphnode-indexer-1:8040", "graphnode-query-1:8040"]
+  - job_name: "indexer-service-metrics"
     static_configs:
-      - targets: ['indexer-service:7300']
-  - job_name: 'indexer-agent-metrics'
-    metrics_path: /metrics
+      - targets: ["indexer-service:7300"]
+  - job_name: "indexer-agent-metrics"
     static_configs:
-      - targets: ['indexer-service:7300']
- 
+      - targets: ["indexer-agent:7300"]

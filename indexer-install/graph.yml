@@ -35,7 +35,7 @@ services:
   ############################################################################
 
   graphnode-query-1:
-    image: graphprotocol/graph-node:latest
+    image: graphprotocol/graph-node:v0.19.2
     restart: always
     depends_on:
       - postgres
@@ -107,7 +107,7 @@ services:
         - traefik.http.services.graph-health.loadbalancer.server.port=8030
 
   graphnode-indexer-1:
-    image: graphprotocol/graph-node:latest
+    image: graphprotocol/graph-node:v0.19.2
     restart: always
     ports:
       #   - "8100:8000" # http
@@ -151,6 +151,42 @@ services:
       #   - "traefik.http.routers.graph-indexer-http.rule=Host(`${GRAPH_QUERY_SERVER_DOMAIN}`) && PathPrefix(`/indexer`)"
       #   - traefik.http.services.graph-indexer.loadbalancer.server.port=8020
 
+  graphnode-indexer-2:
+    image: graphprotocol/graph-node:v0.19.2
+    restart: always
+    # ports:
+    #   - "8100:8000" # http
+    # - "8020:8020" # json-rpc
+    #   - "8140:8040" # metrics
+    depends_on:
+      - postgres
+    environment:
+      postgres_host: "postgres"
+      postgres_db: "${DB_NAME_GRAPH_NODE}"
+      postgres_user: "${DB_USER}"
+      postgres_pass: "${DB_PASSWORD}"
+      ipfs: "${IPFS_ENDPOINT}"
+      # mainnet:http://rpcdaemon:8545
+      ethereum: "mainnet:${ETH_ENDPOINT_GRAPH_NODE_MAINNET}"
+      GRAPH_ETH_CALL_BY_NUMBER: "false"
+      GRAPH_NODE_ID: "missioncontrol_indexer_2"
+      GRAPH_KILL_IF_UNRESPONSIVE: "true"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    # Swarm
+    networks:
+      - default
+      # - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
   ############################################################################
   #                    INDEXER - mission-control network                     #
   ############################################################################
@@ -167,7 +203,7 @@ services:
       INDEXER_AGENT_INDEXER_ADDRESS: "${INDEXER_ADDRESS}"
       INDEXER_AGENT_ETHEREUM: "${ETH_ENDPOINT_INDEXER}"
       # Node IDs of Graph nodes to use for indexing
-      INDEXER_AGENT_INDEX_NODE_IDS: "missioncontrol_indexer_1"
+      INDEXER_AGENT_INDEX_NODE_IDS: "missioncontrol_indexer_1 missioncontrol_indexer_2"
       # Indexer endpoint for receiving requests from the network (public, external)
       INDEXER_AGENT_PUBLIC_INDEXER_URL: "http://${PUBLIC_INDEXER_SERVER_DOMAIN}"
       # Coordinates describing the Indexer's location
@@ -179,7 +215,7 @@ services:
       # Graph Node endpoint for querying subgraphs (internal)
       INDEXER_AGENT_GRAPH_NODE_QUERY_ENDPOINT: "http://graphnode-query-1:8000/"
       # Endpoint to query the network subgraph from (external, always?)
-      INDEXER_AGENT_NETWORK_SUBGRAPH_ENDPOINT: "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-testnet-phase2"
+      INDEXER_AGENT_NETWORK_SUBGRAPH_ENDPOINT: "https://gateway-testnet.thegraph.com/network"
       # Network subgraph deployment (Unused)
       # INDEXER_AGENT_NETWORK_SUBGRAPH_NETWORK: ""
       # Default amount of GRT to allocate to a subgraph deployment (Unused)
@@ -239,7 +275,7 @@ services:
       # Graph Node endpoint for indexing statuses etc. (internal)
       INDEXER_SERVICE_GRAPH_NODE_STATUS_ENDPOINT: "http://graphnode-query-1:8030/graphql"
       # Endpoint to query the network subgraph from (external, always?)
-      INDEXER_SERVICE_NETWORK_SUBGRAPH_ENDPOINT: "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-testnet-phase2"
+      INDEXER_SERVICE_NETWORK_SUBGRAPH_ENDPOINT: "https://gateway-testnet.thegraph.com/network"
       # Network subgraph deployment (Unused)
       # INDEXER_AGENT_NETWORK_SUBGRAPH_NETWORK: ""
       INDEXER_SERVICE_POSTGRES_HOST: "postgres"
