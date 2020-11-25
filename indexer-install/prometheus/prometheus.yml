@@ -9,7 +9,12 @@ alerting:
 scrape_configs:
   - job_name: "graphnode-metrics"
     static_configs:
-      - targets: ["graphnode-indexer-1:8040", "graphnode-query-1:8040"]
+      - targets:
+          [
+            "graphnode-indexer-1:8040",
+            "graphnode-query-1:8040",
+            "graphnode-indexer-2:8040",
+          ]
   - job_name: "indexer-service-metrics"
     static_configs:
       - targets: ["indexer-service:7300"]
