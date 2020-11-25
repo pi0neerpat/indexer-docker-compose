@@ -17,7 +17,7 @@ services:
       POSTGRES_USER: "${DB_USER}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
     volumes:
-      - /data/postgres:/var/lib/postgresql/data
+      - ~/data/postgres:/var/lib/postgresql/data
     # Swarm
     deploy:
       replicas: 1
@@ -46,7 +46,7 @@ services:
     #  - "8001:8001" # ws
     #  - "8040:8040" # metrics
     environment:
-      postgres_host: "postgres:5432"
+      postgres_host: "postgres"
       postgres_db: "${DB_NAME_GRAPH_NODE}"
       postgres_user: "${DB_USER}"
       postgres_pass: "${DB_PASSWORD}"
@@ -116,13 +116,14 @@ services:
     depends_on:
       - postgres
     environment:
-      postgres_host: "postgres:5432"
+      postgres_host: "postgres"
       postgres_db: "${DB_NAME_GRAPH_NODE}"
       postgres_user: "${DB_USER}"
       postgres_pass: "${DB_PASSWORD}"
       ipfs: "${IPFS_ENDPOINT}"
       # mainnet:http://rpcdaemon:8545
       ethereum: "mainnet:${ETH_ENDPOINT_GRAPH_NODE_MAINNET}"
+      GRAPH_ETH_CALL_BY_NUMBER: "false"
       GRAPH_NODE_ID: "missioncontrol_indexer_1"
       GRAPH_KILL_IF_UNRESPONSIVE: "true"
     logging:
@@ -155,7 +156,7 @@ services:
   ############################################################################
 
   indexer-agent:
-    image: graphprotocol/indexer-agent
+    image: graphprotocol/indexer-agent:sha-00ea325
     depends_on:
       - graphnode-query-1
     ports:
@@ -163,6 +164,7 @@ services:
     environment:
       INDEXER_AGENT_INDEXER_MANAGEMENT_PORT: 18000
       INDEXER_AGENT_MNEMONIC: "${MNEMONIC}"
+      INDEXER_AGENT_INDEXER_ADDRESS: "${INDEXER_ADDRESS}"
       INDEXER_AGENT_ETHEREUM: "${ETH_ENDPOINT_INDEXER}"
       # Node IDs of Graph nodes to use for indexing
       INDEXER_AGENT_INDEX_NODE_IDS: "missioncontrol_indexer_1"
@@ -177,16 +179,21 @@ services:
       # Graph Node endpoint for querying subgraphs (internal)
       INDEXER_AGENT_GRAPH_NODE_QUERY_ENDPOINT: "http://graphnode-query-1:8000/"
       # Endpoint to query the network subgraph from (external, always?)
-      INDEXER_AGENT_NETWORK_SUBGRAPH_ENDPOINT: "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-rinkeby"
+      INDEXER_AGENT_NETWORK_SUBGRAPH_ENDPOINT: "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-testnet-phase2"
       # Network subgraph deployment (Unused)
       # INDEXER_AGENT_NETWORK_SUBGRAPH_NETWORK: ""
       # Default amount of GRT to allocate to a subgraph deployment (Unused)
       # INDEXER_AGENT_ALLOCATION_AMOUNT: "0"
       INDEXER_AGENT_POSTGRES_HOST: "postgres"
-      INDEXER_AGENT_POSTGRES_PORT: 5432
       INDEXER_AGENT_POSTGRES_DATABASE: "${DB_NAME_INDEXER}"
       INDEXER_AGENT_POSTGRES_USERNAME: "${DB_USER}"
       INDEXER_AGENT_POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      # Duplicate env variables are needed for now. See https://github.com/graphprotocol/indexer/issues/78
+      SERVER_HOST: "postgres"
+      SERVER_PORT: 5432
+      SERVER_DB_USER: "${DB_USER}"
+      SERVER_DB_PASSWORD: "${DB_PASSWORD}"
+      SERVER_DB_NAME: "${DB_NAME_INDEXER}"
     logging:
       driver: "json-file"
       options:
@@ -217,7 +224,7 @@ services:
       #   - traefik.http.services.indexer-agent.loadbalancer.server.port=18000
 
   indexer-service:
-    image: graphprotocol/indexer-service
+    image: graphprotocol/indexer-service:sha-00ea325
     depends_on:
       - graphnode-query-1
     #ports:
@@ -225,20 +232,29 @@ services:
     environment:
       INDEXER_SERVICE_PORT: 7600
       INDEXER_SERVICE_MNEMONIC: "${MNEMONIC}"
+      INDEXER_SERVICE_INDEXER_ADDRESS: "${INDEXER_ADDRESS}"
       INDEXER_SERVICE_ETHEREUM: "${ETH_ENDPOINT_INDEXER}"
       # Graph Node endpoint to forward queries to (internal)
       INDEXER_SERVICE_GRAPH_NODE_QUERY_ENDPOINT: "http://graphnode-query-1:8000/"
       # Graph Node endpoint for indexing statuses etc. (internal)
       INDEXER_SERVICE_GRAPH_NODE_STATUS_ENDPOINT: "http://graphnode-query-1:8030/graphql"
       # Endpoint to query the network subgraph from (external, always?)
-      INDEXER_SERVICE_NETWORK_SUBGRAPH_ENDPOINT: "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-rinkeby"
+      INDEXER_SERVICE_NETWORK_SUBGRAPH_ENDPOINT: "https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-testnet-phase2"
       # Network subgraph deployment (Unused)
       # INDEXER_AGENT_NETWORK_SUBGRAPH_NETWORK: ""
+      INDEXER_SERVICE_POSTGRES_HOST: "postgres"
+      INDEXER_SERVICE_POSTGRES_PORT: 5432
+      INDEXER_SERVICE_POSTGRES_DATABASE: "${DB_NAME_INDEXER}"
+      INDEXER_SERVICE_POSTGRES_USERNAME: "${DB_USER}"
+      INDEXER_SERVICE_POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      SKIP_EVM_VALIDATION: "true"
+      # INDEXER_SERVICE_METRICS_PORT
+      # Duplicate env variables are needed for now. See https://github.com/graphprotocol/indexer/issues/78
       SERVER_HOST: "postgres"
       SERVER_PORT: 5432
-      SERVER_DB_NAME: "indexer"
       SERVER_DB_USER: "${DB_USER}"
       SERVER_DB_PASSWORD: "${DB_PASSWORD}"
+      SERVER_DB_NAME: "${DB_NAME_INDEXER}"
     logging:
       driver: "json-file"
       options:
@@ -288,7 +304,7 @@ services:
     #   - 9090:9090
     volumes:
       - ./prometheus:/etc/prometheus:ro
-      - /data/prometheus:/prometheus
+      - ~/data/prometheus:/prometheus
     # Swarm
     networks:
       - default
@@ -338,7 +354,7 @@ services:
       GF_SERVER_ROOT_URL: "${GF_SERVER_ROOT_URL}"
     volumes:
       - ./grafana:/etc/grafana/
-      - /data/grafana:/var/lib/grafana
+      - ~/data/grafana:/var/lib/grafana
     # Swarm
     networks:
       - default

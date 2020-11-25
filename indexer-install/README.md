@@ -20,7 +20,7 @@ Once you're done setting up swarm, jump to the next section.
 
 ```bash
 # Connect as root
-ssh root@172.173.174.175
+ssh root@<ip>
 
 export USE_HOSTNAME=traefik.mysite.com
 echo $USE_HOSTNAME > /etc/hostname
