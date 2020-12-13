@@ -63,8 +63,8 @@ services:
         - traefik.http.routers.rinkeby-https.tls=true
         - traefik.http.routers.rinkeby-https.tls.certresolver=le
         - traefik.http.services.rinkeby.loadbalancer.server.port=8545
-          # - traefik.http.middlewares.graph-prometheus-auth.basicauth.users=${PROMETHEUS_ADMIN_USER?Variable not set}:${PROMETHEUS_HASHED_PASSWORD?Variable not set}
-          # - traefik.http.routers.graph-prometheus-https.middlewares=swarmprom-unsee-auth
+        - traefik.http.middlewares.rinkeby-auth.basicauth.users=${USERNAME?Variable not set}:${PASSWORD?Variable not set}
+        - traefik.http.routers.rinkeby-https.middlewares=rinkeby-auth
 
 networks:
   traefik-public:
