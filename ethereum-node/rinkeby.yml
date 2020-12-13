@@ -1,0 +1,71 @@
+version: "3"
+
+# run this rinkeby node with
+# HOSTNAME=my-rinkeby.domain EMAIL=any@email.address docker-compose up -d
+# it will be open to the world. easiest wayy to secure it would be putting some basic auth in the nginx config
+# For this look at https://github.com/nginx-proxy/nginx-proxy#basic-authentication-support
+
+services:
+  rinkeby-rpc:
+    image: ethereum/client-go
+    restart: unless-stopped
+    ports:
+      - "30303:30303"
+      - "30303:30303/udp"
+    # - "8545:8545"
+    volumes:
+      - ~/data/rinkeby/chaindata:/chaindata
+    stop_signal: SIGINT
+    stop_grace_period: 2m
+    command:
+      - --nousb
+      - --http
+      - --http.api
+      - "eth,net,web3"
+      - --http.addr=0.0.0.0
+      - --http.vhosts=*
+      - --http.corsdomain=*
+      - --ws
+      - --ws.origins=*
+      - --ws.addr=0.0.0.0
+      - --ws.api
+      - "eth,net,web3"
+      - --graphql
+      - --rinkeby
+      - --graphql.corsdomain=*
+      - --graphql.vhosts=*
+      - --datadir
+      - "/chaindata"
+      - --syncmode=fast
+    networks:
+      - default
+      - traefik-public
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      # resources:
+      #   limits:
+      #     memory: 128M
+      #   reservations:
+      #     memory: 64M
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - "traefik.http.routers.rinkeby-http.rule=Host(`${DOMAIN}`)"
+        - traefik.http.routers.rinkeby-http.entrypoints=http
+        - traefik.http.routers.rinkeby-http.middlewares=https-redirect
+        - "traefik.http.routers.rinkeby-https.rule=Host(`${DOMAIN}`)"
+        - traefik.http.routers.rinkeby-https.entrypoints=https
+        - traefik.http.routers.rinkeby-https.tls=true
+        - traefik.http.routers.rinkeby-https.tls.certresolver=le
+        - traefik.http.services.rinkeby.loadbalancer.server.port=8545
+          # - traefik.http.middlewares.graph-prometheus-auth.basicauth.users=${PROMETHEUS_ADMIN_USER?Variable not set}:${PROMETHEUS_HASHED_PASSWORD?Variable not set}
+          # - traefik.http.routers.graph-prometheus-https.middlewares=swarmprom-unsee-auth
+
+networks:
+  traefik-public:
+    external: true
