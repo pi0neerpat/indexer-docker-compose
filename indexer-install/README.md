@@ -159,7 +159,7 @@ docker node update --label-add postgres.postgres-data=true $NODE_ID
 Create some necessary directories. See [docker docs](https://docs.docker.com/engine/install/linux-postinstall/) for more help with managing permissions.
 
 ```bash
-mkdir -p /data/grafana /data/prometheus /data/postgres
+mkdir -p /data/grafana /data/prometheus /data/postgres /data/rinkeby/chaindata
 sudo chown "$USER":"$USER" /data/ -R
 ```
 

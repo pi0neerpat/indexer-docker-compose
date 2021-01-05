@@ -71,11 +71,11 @@ services:
       placement:
         constraints:
           - node.role == manager
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
+      # resources:
+      #   limits:
+      #     memory: 128M
+      #   reservations:
+      #     memory: 64M
       # NOTE: disable treafik network and labels once the indexer-service is working
       labels:
         - traefik.enable=true
@@ -193,9 +193,10 @@ services:
   ############################################################################
 
   indexer-agent:
-    image: graphprotocol/indexer-agent:sha-dfd5963
+    image: graphprotocol/indexer-agent:sha-44fe0aa
     depends_on:
       - graphnode-query-1
+      - rinkeby-rpc
     ports:
       - 18000:18000
     environment:
@@ -206,7 +207,7 @@ services:
       # Node IDs of Graph nodes to use for indexing
       INDEXER_AGENT_INDEX_NODE_IDS: "missioncontrol_indexer_1,missioncontrol_indexer_2"
       # Indexer endpoint for receiving requests from the network (public, external)
-      INDEXER_AGENT_PUBLIC_INDEXER_URL: "http://${PUBLIC_INDEXER_SERVER_DOMAIN}"
+      INDEXER_AGENT_PUBLIC_INDEXER_URL: "https://${PUBLIC_INDEXER_SERVER_DOMAIN}"
       # Coordinates describing the Indexer's location
       INDEXER_AGENT_INDEXER_GEO_COORDINATES: ${GEO_COORDINATES}
       # Graph Node endpoint for applying and updating subgraph deployments (internal)
@@ -261,12 +262,13 @@ services:
       #   - traefik.http.services.indexer-agent.loadbalancer.server.port=18000
 
   indexer-service:
-    image: graphprotocol/indexer-service:sha-b7019b9
+    image: graphprotocol/indexer-service:sha-44fe0aa
     depends_on:
       - graphnode-query-1
+      - rinkeby-rpc
     ports:
       - 7300:7300
-      # - 7600:7600
+    # - 7600:7600
     environment:
       INDEXER_SERVICE_PORT: 7600
       INDEXER_SERVICE_MNEMONIC: "${MNEMONIC}"
@@ -285,7 +287,7 @@ services:
       INDEXER_SERVICE_POSTGRES_DATABASE: "${DB_NAME_INDEXER}"
       INDEXER_SERVICE_POSTGRES_USERNAME: "${DB_USER}"
       INDEXER_SERVICE_POSTGRES_PASSWORD: "${DB_PASSWORD}"
-      INDEXER_SERVICE_WALLET_WORKER_THREADS: 8
+      INDEXER_SERVICE_WALLET_WORKER_THREADS: 12
       INDEXER_SERVICE_WALLET_SKIP_EVM_VALIDATION: "true"
       INDEXER_SERVICE_METRICS_PORT: 7300
       # Duplicate env variables are needed for now. See https://github.com/graphprotocol/indexer/issues/78
@@ -421,6 +423,44 @@ services:
         - traefik.http.routers.graph-grafana-https.tls=true
         - traefik.http.routers.graph-grafana-https.tls.certresolver=le
         - traefik.http.services.graph-grafana.loadbalancer.server.port=3000
+
+  rinkeby-rpc:
+    image: ethereum/client-go
+    container_name: rinkeby-rpc
+    restart: unless-stopped
+    ports:
+      - "30303:30303"
+      - "30303:30303/udp"
+    volumes:
+      - ~/data/rinkeby/chaindata:/chaindata
+    stop_signal: SIGINT
+    stop_grace_period: 2m
+    command:
+      - --nousb
+      - --http
+      - --http.api
+      - "eth,net,web3"
+      # - --http.addr=0.0.0.0
+      - --http.vhosts=*
+      # - --http.corsdomain=*
+      - --ws
+      - --ws.origins=*
+      - --ws.addr=0.0.0.0
+      - --ws.api
+      - "eth,net,web3"
+      - --graphql
+      - --rinkeby
+      # - --graphql.corsdomain=*
+      - --graphql.vhosts=*
+      - --datadir
+      - "/chaindata"
+      - --syncmode=fast
+    networks:
+      - default
+      - traefik-public
+    # environment:
+    #   VIRTUAL_HOST: ${HOSTNAME}
+    #   VIRTUAL_PORT: 8545
 
 networks:
   traefik-public:
