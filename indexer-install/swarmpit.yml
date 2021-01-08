@@ -1,4 +1,4 @@
-version: '3.3'
+version: "3.3"
 
 services:
   app:
@@ -14,10 +14,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
+          cpus: "0.50"
           memory: 1024M
         reservations:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 512M
       placement:
         constraints:
@@ -38,16 +38,16 @@ services:
   db:
     image: couchdb:2.3.0
     volumes:
-      - db-data:/opt/couchdb/data
+      - /data/admin/swarmpit/db-data:/opt/couchdb/data
     networks:
       - net
     deploy:
       resources:
         limits:
-          cpus: '0.30'
+          cpus: "0.30"
           memory: 512M
         reservations:
-          cpus: '0.15'
+          cpus: "0.15"
           memory: 256M
       placement:
         constraints:
@@ -55,16 +55,16 @@ services:
   influxdb:
     image: influxdb:1.7
     volumes:
-      - influx-data:/var/lib/influxdb
+      - /data/admin/swarmpit/influx-data:/var/lib/influxdb
     networks:
       - net
     deploy:
       resources:
         reservations:
-          cpus: '0.3'
+          cpus: "0.3"
           memory: 128M
         limits:
-          cpus: '0.6'
+          cpus: "0.6"
           memory: 512M
       placement:
         constraints:
@@ -81,10 +81,10 @@ services:
       mode: global
       resources:
         limits:
-          cpus: '0.10'
+          cpus: "0.10"
           memory: 64M
         reservations:
-          cpus: '0.05'
+          cpus: "0.05"
           memory: 32M
 
 networks:

@@ -14,10 +14,11 @@ services:
     ports:
       - 5432:5432
     environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_USER: "${DB_USER}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
     volumes:
-      - ~/data/postgres:/var/lib/postgresql/data
+      - /data/postgres:/var/lib/postgresql/data
     # Swarm
     deploy:
       replicas: 1
@@ -47,7 +48,7 @@ services:
     #  - "8040:8040" # metrics
     environment:
       postgres_host: "postgres"
-      postgres_db: "${DB_NAME_GRAPH_NODE}"
+      postgres_db: graph-node
       postgres_user: "${DB_USER}"
       postgres_pass: "${DB_PASSWORD}"
       ipfs: "${IPFS_ENDPOINT}"
@@ -117,7 +118,7 @@ services:
       - postgres
     environment:
       postgres_host: "postgres"
-      postgres_db: "${DB_NAME_GRAPH_NODE}"
+      postgres_db: graph-node
       postgres_user: "${DB_USER}"
       postgres_pass: "${DB_PASSWORD}"
       ipfs: "${IPFS_ENDPOINT}"
@@ -162,7 +163,7 @@ services:
       - postgres
     environment:
       postgres_host: "postgres"
-      postgres_db: "${DB_NAME_GRAPH_NODE}"
+      postgres_db: graph-node
       postgres_user: "${DB_USER}"
       postgres_pass: "${DB_PASSWORD}"
       ipfs: "${IPFS_ENDPOINT}"
@@ -193,7 +194,7 @@ services:
   ############################################################################
 
   indexer-agent:
-    image: graphprotocol/indexer-agent:sha-44fe0aa
+    image: ghcr.io/graphprotocol/indexer-agent:v0.9.1
     depends_on:
       - graphnode-query-1
       - rinkeby-rpc
@@ -217,7 +218,7 @@ services:
       # Graph Node endpoint for querying subgraphs (internal)
       INDEXER_AGENT_GRAPH_NODE_QUERY_ENDPOINT: "http://graphnode-query-1:8000/"
       # Endpoint to query the network subgraph from (external, always?)
-      INDEXER_AGENT_NETWORK_SUBGRAPH_ENDPOINT: "https://gateway-testnet.thegraph.com/network"
+      INDEXER_AGENT_NETWORK_SUBGRAPH_ENDPOINT: "https://gateway.network.thegraph.com/network"
       # Network subgraph deployment (Unused)
       # INDEXER_AGENT_NETWORK_SUBGRAPH_NETWORK: ""
       # Default amount of GRT to allocate to a subgraph deployment (Unused)
@@ -262,7 +263,7 @@ services:
       #   - traefik.http.services.indexer-agent.loadbalancer.server.port=18000
 
   indexer-service:
-    image: graphprotocol/indexer-service:sha-44fe0aa
+    image: ghcr.io/graphprotocol/indexer-service:v0.9.1
     depends_on:
       - graphnode-query-1
       - rinkeby-rpc
@@ -279,7 +280,7 @@ services:
       # Graph Node endpoint for indexing statuses etc. (internal)
       INDEXER_SERVICE_GRAPH_NODE_STATUS_ENDPOINT: "http://graphnode-query-1:8030/graphql"
       # Endpoint to query the network subgraph from (external, always?)
-      INDEXER_SERVICE_NETWORK_SUBGRAPH_ENDPOINT: "https://gateway-testnet.thegraph.com/network"
+      INDEXER_SERVICE_NETWORK_SUBGRAPH_ENDPOINT: "https://gateway.network.thegraph.com/network"
       # Network subgraph deployment (Unused)
       # INDEXER_AGENT_NETWORK_SUBGRAPH_NETWORK: ""
       INDEXER_SERVICE_POSTGRES_HOST: "postgres"
@@ -345,7 +346,7 @@ services:
     #   - 9090:9090
     volumes:
       - ./prometheus:/etc/prometheus:ro
-      - ~/data/prometheus:/prometheus
+      - /data/admin/prometheus:/prometheus
     # Swarm
     networks:
       - default
@@ -395,7 +396,7 @@ services:
       GF_SERVER_ROOT_URL: "${GF_SERVER_ROOT_URL}"
     volumes:
       - ./grafana:/etc/grafana/
-      - ~/data/grafana:/var/lib/grafana
+      - /data/admin/grafana:/var/lib/grafana
     # Swarm
     networks:
       - default
@@ -424,44 +425,43 @@ services:
         - traefik.http.routers.graph-grafana-https.tls.certresolver=le
         - traefik.http.services.graph-grafana.loadbalancer.server.port=3000
 
-  rinkeby-rpc:
-    image: ethereum/client-go
-    container_name: rinkeby-rpc
-    restart: unless-stopped
-    ports:
-      - "30303:30303"
-      - "30303:30303/udp"
-    volumes:
-      - ~/data/rinkeby/chaindata:/chaindata
-    stop_signal: SIGINT
-    stop_grace_period: 2m
-    command:
-      - --nousb
-      - --http
-      - --http.api
-      - "eth,net,web3"
-      # - --http.addr=0.0.0.0
-      - --http.vhosts=*
-      # - --http.corsdomain=*
-      - --ws
-      - --ws.origins=*
-      - --ws.addr=0.0.0.0
-      - --ws.api
-      - "eth,net,web3"
-      - --graphql
-      - --rinkeby
-      # - --graphql.corsdomain=*
-      - --graphql.vhosts=*
-      - --datadir
-      - "/chaindata"
-      - --syncmode=fast
-    networks:
-      - default
-      - traefik-public
-    # environment:
-    #   VIRTUAL_HOST: ${HOSTNAME}
-    #   VIRTUAL_PORT: 8545
-
+  # rinkeby-rpc:
+  #   image: ethereum/client-go
+  #   container_name: rinkeby-rpc
+  #   restart: unless-stopped
+  #   ports:
+  #     - "30303:30303"
+  #     - "30303:30303/udp"
+  #   volumes:
+  #     - /data/rinkeby/chaindata:/chaindata
+  #   stop_signal: SIGINT
+  #   stop_grace_period: 2m
+  #   command:
+  #     - --nousb
+  #     - --http
+  #     - --http.api
+  #     - "eth,net,web3"
+  #     # - --http.addr=0.0.0.0
+  #     - --http.vhosts=*
+  #     # - --http.corsdomain=*
+  #     - --ws
+  #     - --ws.origins=*
+  #     - --ws.addr=0.0.0.0
+  #     - --ws.api
+  #     - "eth,net,web3"
+  #     - --graphql
+  #     - --rinkeby
+  #     # - --graphql.corsdomain=*
+  #     - --graphql.vhosts=*
+  #     - --datadir
+  #     - "/chaindata"
+  #     - --syncmode=fast
+  #   networks:
+  #     - default
+  #     - traefik-public
+  #   # environment:
+  #   #   VIRTUAL_HOST: ${HOSTNAME}
+  #   #   VIRTUAL_PORT: 8545
 networks:
   traefik-public:
     external: true
